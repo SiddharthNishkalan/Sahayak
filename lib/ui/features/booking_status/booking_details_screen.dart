@@ -30,6 +30,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   bool _isPaid = false;
   bool _reviewSubmitted = false;
   late Booking _currentBooking;
+  int _selectedProofTab = 1; // 0: Before, 1: After, 2: Compare
 
   @override
   void initState() {
@@ -560,12 +561,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 4. Doorstep Verification OTP Pill
+                  // 4. Doorstep Verification OTP Security Card
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: CooperativeColors.primary.withValues(alpha: 0.15)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -574,57 +576,124 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'DOORSTEP SECURITY CODE',
-                              style: CooperativeTypography.caption.copyWith(
-                                color: CooperativeColors.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Row(
                               children: [
+                                const Icon(Icons.shield, color: CooperativeColors.primary, size: 18),
+                                const SizedBox(width: 6),
                                 Text(
-                                  b.doorstepOtp,
-                                  style: CooperativeTypography.headlineLg.copyWith(
+                                  'DOORSTEP SECURITY OTP',
+                                  style: CooperativeTypography.caption.copyWith(
                                     color: CooperativeColors.primary,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 4.0,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.verified, color: CooperativeColors.secondary, size: 16),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      'Verified at 2:14 PM',
-                                      style: CooperativeTypography.caption.copyWith(
-                                        color: CooperativeColors.secondary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: CooperativeColors.secondary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.verified, color: CooperativeColors.secondary, size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Verified at 2:14 PM',
+                                    style: CooperativeTypography.caption.copyWith(
+                                      color: CooperativeColors.secondary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: CooperativeColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: CooperativeColors.primary.withValues(alpha: 0.2)),
+                              ),
+                              child: Text(
+                                b.doorstepOtp,
+                                style: CooperativeTypography.headlineLg.copyWith(
+                                  color: CooperativeColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 6.0,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            InkWell(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: b.doorstepOtp));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Doorstep OTP ${b.doorstepOtp} copied to clipboard'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: CooperativeColors.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.copy, size: 18, color: CooperativeColors.primary),
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: CooperativeColors.secondary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.key, color: CooperativeColors.secondary, size: 24),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                         Container(
-                          width: 44,
-                          height: 44,
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: CooperativeColors.secondary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
+                            color: CooperativeColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.key, color: CooperativeColors.secondary, size: 24),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.lock_outline, size: 14, color: CooperativeColors.onSurfaceVariant),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Only share with ${b.worker.name.split(' ').first} in person at your door. Never share via phone or message.',
+                                  style: CooperativeTypography.caption.copyWith(
+                                    color: CooperativeColors.onSurfaceVariant,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -918,6 +987,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: 14),
+
+                  // Job Work Proof Showcase Card (Before & After)
+                  _buildJobProofShowcase(b),
 
                   const SizedBox(height: 14),
 
@@ -1573,6 +1647,643 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildJobProofShowcase(Booking b) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CooperativeColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: CooperativeColors.secondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.verified_outlined, color: CooperativeColors.secondary, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Job Work Proof',
+                        style: CooperativeTypography.headlineSm.copyWith(
+                          color: CooperativeColors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'Before & After Inspection Evidence',
+                        style: CooperativeTypography.caption.copyWith(
+                          color: CooperativeColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: CooperativeColors.secondaryContainer.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.verified, color: CooperativeColors.secondary, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Guild Certified',
+                      style: CooperativeTypography.caption.copyWith(
+                        color: CooperativeColors.secondary,
+                        fontWeight: FontWeight.w700,
+                      ).copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Segmented Tabs
+          Container(
+            height: 38,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: CooperativeColors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                _buildProofTabItem(0, 'Before Work', Icons.history),
+                _buildProofTabItem(1, 'After Fix', Icons.auto_awesome),
+                _buildProofTabItem(2, 'Side-by-Side', Icons.compare),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _buildProofVisualArea(b),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showProofComparisonDialog(b),
+              icon: const Icon(Icons.fullscreen, size: 18, color: CooperativeColors.primary),
+              label: Text(
+                'Inspect High-Res Proof & Guild Checklist',
+                style: CooperativeTypography.labelMd.copyWith(
+                  color: CooperativeColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: CooperativeColors.primary),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProofTabItem(int index, String label, IconData icon) {
+    final isSelected = _selectedProofTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedProofTab = index;
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? CooperativeColors.surfaceContainerLowest : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? CooperativeColors.primary : CooperativeColors.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? CooperativeColors.primary : CooperativeColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProofVisualArea(Booking b) {
+    if (_selectedProofTab == 0) {
+      return Container(
+        decoration: BoxDecoration(
+          color: CooperativeColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 160,
+                  width: double.infinity,
+                  color: CooperativeColors.surfaceContainer,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.water_drop_outlined, size: 40, color: CooperativeColors.error.withValues(alpha: 0.6)),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Initial Defect Photo (Timestamped)',
+                          style: CooperativeTypography.caption.copyWith(color: CooperativeColors.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: CooperativeColors.error,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'BEFORE SERVICE · 2:15 PM',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gps_fixed, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'Ward 5 Verified',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, size: 16, color: CooperativeColors.error),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Defective main valve stem with persistent seal degradation & 4.2 L/hr leak.',
+                      style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (_selectedProofTab == 1) {
+      return Container(
+        decoration: BoxDecoration(
+          color: CooperativeColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: CooperativeColors.secondary.withValues(alpha: 0.3)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 160,
+                  width: double.infinity,
+                  color: CooperativeColors.secondary.withValues(alpha: 0.08),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle_outline, size: 40, color: CooperativeColors.secondary),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Work Completed & Inspected (Timestamped)',
+                          style: CooperativeTypography.caption.copyWith(color: CooperativeColors.secondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: CooperativeColors.secondary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.verified, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'AFTER COMPLETION · 2:54 PM',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.speed, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          '3.0 Bar Pressure: 0 Drips',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, size: 16, color: CooperativeColors.secondary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'ISI Neoprene gasket installed & valve seated. Tested under full mains pressure.',
+                      style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Side-by-side comparison view
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: CooperativeColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: CooperativeColors.surfaceContainer,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: CooperativeColors.error.withValues(alpha: 0.4)),
+                        ),
+                        child: const Stack(
+                          children: [
+                            Center(child: Icon(Icons.water_drop_outlined, color: CooperativeColors.error, size: 30)),
+                            Positioned(
+                              top: 6,
+                              left: 6,
+                              child: Text(
+                                'BEFORE',
+                                style: TextStyle(
+                                  color: CooperativeColors.error,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 9,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Defective Valve (2:15 PM)',
+                        style: CooperativeTypography.caption.copyWith(color: CooperativeColors.onSurfaceVariant).copyWith(fontSize: 10),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: CooperativeColors.secondaryContainer.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: CooperativeColors.secondary.withValues(alpha: 0.4)),
+                        ),
+                        child: const Stack(
+                          children: [
+                            Center(child: Icon(Icons.check_circle_outline, color: CooperativeColors.secondary, size: 30)),
+                            Positioned(
+                              top: 6,
+                              left: 6,
+                              child: Text(
+                                'AFTER',
+                                style: TextStyle(
+                                  color: CooperativeColors.secondary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 9,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Fixed & Sealed (2:54 PM)',
+                        style: CooperativeTypography.caption.copyWith(color: CooperativeColors.secondary).copyWith(fontSize: 10),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: CooperativeColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    '⏱️ Duration: 39 mins',
+                    style: CooperativeTypography.caption.copyWith(color: CooperativeColors.onSurface, fontWeight: FontWeight.w600).copyWith(fontSize: 11),
+                  ),
+                  Text(
+                    '🛠️ Parts: 1 Neoprene Seal',
+                    style: CooperativeTypography.caption.copyWith(color: CooperativeColors.onSurface, fontWeight: FontWeight.w600).copyWith(fontSize: 11),
+                  ),
+                  Text(
+                    '🛡️ 30d Warranty',
+                    style: CooperativeTypography.caption.copyWith(color: CooperativeColors.secondary, fontWeight: FontWeight.w700).copyWith(fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showProofComparisonDialog(Booking b) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: CooperativeColors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.verified, color: CooperativeColors.secondary, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Co-op Work Inspection',
+                  style: CooperativeTypography.headlineSm.copyWith(
+                    color: CooperativeColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(ctx),
+              icon: const Icon(Icons.close, size: 20),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Booking #${b.id} • ${b.serviceName}',
+                style: CooperativeTypography.labelMd.copyWith(color: CooperativeColors.primary, fontWeight: FontWeight.w700),
+              ),
+              Text(
+                'Performed by ${b.worker.name} (${b.worker.guildId})',
+                style: CooperativeTypography.caption.copyWith(color: CooperativeColors.onSurfaceVariant),
+              ),
+              const SizedBox(height: 14),
+              // Side-by-side images
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 110,
+                      decoration: BoxDecoration(
+                        color: CooperativeColors.surfaceContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.water_drop, color: CooperativeColors.error, size: 28),
+                          SizedBox(height: 4),
+                          Text('Before: Leaking Valve', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text('2:15 PM', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      height: 110,
+                      decoration: BoxDecoration(
+                        color: CooperativeColors.secondaryContainer.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: CooperativeColors.secondary, size: 28),
+                          SizedBox(height: 4),
+                          Text('After: Sealed Spindle', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: CooperativeColors.secondary)),
+                          Text('2:54 PM', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Cooperative Quality Standards Checklist',
+                style: CooperativeTypography.labelSm.copyWith(
+                  color: CooperativeColors.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildInspectionItem('Hydrostatic pressure test: 3.0 Bar (0 drips)'),
+              _buildInspectionItem('Genuine ISI replacement neoprene seal fitted'),
+              _buildInspectionItem('Debris cleaned & customer area sanitized'),
+              _buildInspectionItem('30-Day Tamil Nadu Co-op warranty activated'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Cooperative Work Completion Certificate downloaded.'),
+                  backgroundColor: CooperativeColors.secondary,
+                ),
+              );
+            },
+            icon: const Icon(Icons.download, size: 16),
+            label: const Text('Certificate'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CooperativeColors.primary,
+              foregroundColor: CooperativeColors.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInspectionItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.check_circle, size: 16, color: CooperativeColors.secondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: CooperativeTypography.bodySm.copyWith(
+                color: CooperativeColors.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
