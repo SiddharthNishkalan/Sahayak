@@ -404,14 +404,18 @@ class ProfileSettingsScreen extends StatelessWidget {
                                           style: CooperativeTypography.caption.copyWith(
                                             color: CooperativeColors.onSurfaceVariant,
                                           )),
-                                      Text(
-                                          viewModel.currentUser?.phone.isNotEmpty == true
-                                              ? viewModel.currentUser!.phone
-                                              : viewModel.userPhone,
-                                          style: CooperativeTypography.labelMd.copyWith(
-                                            color: CooperativeColors.onSurface,
-                                            fontWeight: FontWeight.w700,
-                                          )),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                            viewModel.currentUser?.phone.isNotEmpty == true
+                                                ? viewModel.currentUser!.phone
+                                                : viewModel.userPhone,
+                                            style: CooperativeTypography.labelMd.copyWith(
+                                              color: CooperativeColors.onSurface,
+                                              fontWeight: FontWeight.w700,
+                                            )),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -452,14 +456,18 @@ class ProfileSettingsScreen extends StatelessWidget {
                                           style: CooperativeTypography.caption.copyWith(
                                             color: CooperativeColors.onSurfaceVariant,
                                           )),
-                                      Text(
-                                          viewModel.currentUser?.email.isNotEmpty == true
-                                              ? viewModel.currentUser!.email
-                                              : viewModel.userEmail,
-                                          style: CooperativeTypography.labelMd.copyWith(
-                                            color: CooperativeColors.onSurface,
-                                            fontWeight: FontWeight.w700,
-                                          )),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                            viewModel.currentUser?.email.isNotEmpty == true
+                                                ? viewModel.currentUser!.email
+                                                : viewModel.userEmail,
+                                            style: CooperativeTypography.labelMd.copyWith(
+                                              color: CooperativeColors.onSurface,
+                                              fontWeight: FontWeight.w700,
+                                            )),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -727,7 +735,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                         iconColor: CooperativeColors.secondary,
                         title: 'Member Share Capital',
                         subtitle: '10 Voting Shares in Municipal Guild',
-                        trailingText: '₹1,000',
+                        trailingText: '10 Shares · Active',
                       ),
                       const Divider(height: 16, thickness: 0.5, color: CooperativeColors.surfaceContainerHigh),
                       _buildPlainSettingsTile(
@@ -794,7 +802,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                           crossAxisCount: 2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          childAspectRatio: 2.6,
+                          childAspectRatio: 2.4,
                         ),
                         itemBuilder: (context, index) {
                           final lang = AppLanguage.supportedLanguages[index];

@@ -455,7 +455,7 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 8,
                               mainAxisSpacing: 8,
-                              childAspectRatio: 2.2,
+                              childAspectRatio: 2.0,
                             ),
                             itemBuilder: (context, index) {
                               final item = _slotOptions[index];

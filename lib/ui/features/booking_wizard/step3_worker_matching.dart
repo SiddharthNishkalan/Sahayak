@@ -445,58 +445,62 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                       color: SahayakColors.surfaceContainerLowest,
                       border: Border(top: BorderSide(color: SahayakColors.borderSubtle)),
                     ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Selected: ${selectedOffer.worker.name}',
-                                    style: SahayakTypography.labelMd(),
-                                  ),
-                                  Text(
-                                    'Visit Fee: ₹${selectedOffer.quotedVisitFee.toInt()} · Doorstep OTP on confirm',
-                                    style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: SahayakColors.secondaryFixed,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Worker Quoted',
-                                style: SahayakTypography.caption(color: SahayakColors.onSecondaryFixed)
-                                    .copyWith(fontWeight: FontWeight.w800, fontSize: 10),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _confirmBooking,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    child: SafeArea(
+                      top: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  'Confirm Booking with ${selectedOffer.worker.name.split(" ")[0]}',
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Selected: ${selectedOffer.worker.name}',
+                                      style: SahayakTypography.labelMd(),
+                                    ),
+                                    Text(
+                                      'Visit Fee: ₹${selectedOffer.quotedVisitFee.toInt()} · Doorstep OTP on confirm',
+                                      style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Icon(Icons.check_circle_outline_rounded, size: 18),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: SahayakColors.secondaryFixed,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Worker Quoted',
+                                  style: SahayakTypography.caption(color: SahayakColors.onSecondaryFixed)
+                                      .copyWith(fontWeight: FontWeight.w800, fontSize: 10),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: _confirmBooking,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    'Confirm Booking with ${selectedOffer.worker.name.split(" ")[0]}',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.check_circle_outline_rounded, size: 18),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
               ],

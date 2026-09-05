@@ -226,11 +226,13 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                       color: !isMultiTradeMode ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
                                     ),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      'Single Trade',
-                                      style: SahayakTypography.labelSm(
-                                        color: !isMultiTradeMode ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
-                                      ).copyWith(fontWeight: FontWeight.w700),
+                                    Flexible(
+                                      child: Text(
+                                        'Single Trade',
+                                        style: SahayakTypography.labelSm(
+                                          color: !isMultiTradeMode ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
+                                        ).copyWith(fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -262,11 +264,13 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                   children: [
                                     const Icon(Icons.hub_rounded, size: 15, color: SahayakColors.secondary),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      'Multi-Trade',
-                                      style: SahayakTypography.labelSm(
-                                        color: isMultiTradeMode ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
-                                      ).copyWith(fontWeight: FontWeight.w700),
+                                    Flexible(
+                                      child: Text(
+                                        'Multi-Trade',
+                                        style: SahayakTypography.labelSm(
+                                          color: isMultiTradeMode ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
+                                        ).copyWith(fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                     const SizedBox(width: 6),
                                     Container(
@@ -1048,7 +1052,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
       itemCount: services.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 0.82,
+        childAspectRatio: 0.72,
         crossAxisSpacing: 8,
         mainAxisSpacing: 10,
       ),
@@ -1247,7 +1251,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     final services = widget.viewModel.repository.services;
 
     return SizedBox(
-      height: 168,
+      height: 176,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: services.length,

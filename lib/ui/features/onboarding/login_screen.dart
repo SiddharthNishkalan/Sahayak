@@ -59,13 +59,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   void _showLanguagePicker() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: SahayakColors.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 GridView.count(
                   shrinkWrap: true,
                   crossAxisCount: 2,
-                  childAspectRatio: 2.8,
+                  childAspectRatio: 2.4,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                   physics: const NeverScrollableScrollPhysics(),

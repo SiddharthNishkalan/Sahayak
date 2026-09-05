@@ -357,7 +357,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 8,
                                   mainAxisSpacing: 8,
-                                  childAspectRatio: 1.15,
+                                  childAspectRatio: 1.02,
                                   children: filteredSubcategories.map((sub) {
                                     final isSel = sub.id == selectedSubId;
                                     return InkWell(
@@ -416,9 +416,14 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                                 Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
-                                                    Text('Worker Quote',
+                                                    Flexible(
+                                                      child: Text(
+                                                        'Worker Quote',
                                                         style: SahayakTypography.caption(color: SahayakColors.primary)
-                                                            .copyWith(fontWeight: FontWeight.w700)),
+                                                            .copyWith(fontWeight: FontWeight.w700),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 4),
                                                     Text('~45m', style: SahayakTypography.caption().copyWith(fontSize: 10)),
                                                   ],
                                                 ),

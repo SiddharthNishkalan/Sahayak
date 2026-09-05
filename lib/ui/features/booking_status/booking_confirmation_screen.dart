@@ -195,11 +195,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               errorBuilder: (_, _, _) => const Icon(Icons.handshake, color: CooperativeColors.primary, size: 24),
             ),
             const SizedBox(width: 8),
-            Text(
-              'Service Confirmation',
-              style: CooperativeTypography.headlineSm.copyWith(
-                color: CooperativeColors.onSurface,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                'Service Confirmation',
+                style: CooperativeTypography.headlineSm.copyWith(
+                  color: CooperativeColors.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -715,29 +717,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Service Progress Tracker',
-                                style: CooperativeTypography.labelLg.copyWith(
-                                  color: CooperativeColors.onSurface,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Step 2 of 5',
-                              style: CooperativeTypography.caption.copyWith(
-                                color: CooperativeColors.secondary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+
                         BookingTimelineTracker(
                           currentStage: BookingStage.workerOnTheWay,
                           estimatedArrivalMinutes: 12,

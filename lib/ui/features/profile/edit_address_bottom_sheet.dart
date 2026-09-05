@@ -411,13 +411,16 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '📍 GPS: 11.0168° N, 76.9558° E',
-                                    style: CooperativeTypography.caption.copyWith(
-                                      color: CooperativeColors.onSurfaceVariant,
-                                      fontSize: 11,
+                                  Flexible(
+                                    child: Text(
+                                      '📍 GPS: 11.0168° N, 76.9558° E',
+                                      style: CooperativeTypography.caption.copyWith(
+                                        color: CooperativeColors.onSurfaceVariant,
+                                        fontSize: 11,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     'Shivaji Nagar GIS Hub',
                                     style: CooperativeTypography.caption.copyWith(

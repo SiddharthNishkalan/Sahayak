@@ -581,20 +581,25 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.shield, color: CooperativeColors.primary, size: 18),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'DOORSTEP SECURITY OTP',
-                                  style: CooperativeTypography.caption.copyWith(
-                                    color: CooperativeColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.shield, color: CooperativeColors.primary, size: 18),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      'DOORSTEP SECURITY OTP',
+                                      style: CooperativeTypography.caption.copyWith(
+                                        color: CooperativeColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
@@ -740,11 +745,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        b.worker.name,
-                                        style: CooperativeTypography.headlineSm.copyWith(
-                                          color: CooperativeColors.onSurface,
-                                          fontWeight: FontWeight.w700,
+                                      Flexible(
+                                        child: Text(
+                                          b.worker.name,
+                                          style: CooperativeTypography.headlineSm.copyWith(
+                                            color: CooperativeColors.onSurface,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -886,6 +893,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                               child: CustomVectorMap(
                                 locationLabel: 'Ward 5, Shivaji Nagar',
                                 interactive: false,
+                                showControls: false,
                               ),
                             ),
                             Positioned(
@@ -963,16 +971,23 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.near_me, size: 18, color: CooperativeColors.onSurfaceVariant),
-                                  const SizedBox(width: 6),
-                                  Text('1.4 km from Shivaji Nagar Hub',
-                                      style: CooperativeTypography.bodySm.copyWith(
-                                        color: CooperativeColors.onSurface,
-                                      )),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.near_me, size: 18, color: CooperativeColors.onSurfaceVariant),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        '1.4 km from Shivaji Nagar Hub',
+                                        style: CooperativeTypography.bodySm.copyWith(
+                                          color: CooperativeColors.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 'Logged Arrival: 2:12 PM',
                                 style: CooperativeTypography.caption.copyWith(
@@ -1046,21 +1061,24 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Total Final Amount',
-                                      style: CooperativeTypography.headlineSm.copyWith(
-                                        color: CooperativeColors.onSurface,
-                                        fontWeight: FontWeight.w700,
-                                      )),
-                                  Text('100% paid to worker & welfare fund',
-                                      style: CooperativeTypography.caption.copyWith(
-                                        color: CooperativeColors.secondary,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Total Final Amount',
+                                        style: CooperativeTypography.headlineSm.copyWith(
+                                          color: CooperativeColors.onSurface,
+                                          fontWeight: FontWeight.w700,
+                                        )),
+                                    Text('100% paid to worker & welfare fund',
+                                        style: CooperativeTypography.caption.copyWith(
+                                          color: CooperativeColors.secondary,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 '₹850',
                                 style: CooperativeTypography.headlineLg.copyWith(
@@ -1139,24 +1157,29 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.notifications_active_rounded,
-                                  color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
-                                      ? CooperativeColors.tertiary
-                                      : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
-                                          ? CooperativeColors.error
-                                          : CooperativeColors.secondary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Worker 1-Hr Pre-Service Update',
-                                  style: CooperativeTypography.labelMd.copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              ],
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.notifications_active_rounded,
+                                    color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
+                                        ? CooperativeColors.tertiary
+                                        : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
+                                            ? CooperativeColors.error
+                                            : CooperativeColors.secondary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      'Worker 1-Hr Pre-Service Update',
+                                      style: CooperativeTypography.labelMd.copyWith(fontWeight: FontWeight.w700),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(

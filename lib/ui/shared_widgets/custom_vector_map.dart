@@ -84,156 +84,154 @@ class _CustomVectorMapState extends State<CustomVectorMap>
             ),
           ),
 
-          // Floating Top Tooltip
+          // Unified Top Control Bar (Never Overlaps)
           Positioned(
             top: 10,
-            left: 16,
-            right: 16,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.95),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                  border: Border.all(color: SahayakColors.primary.withValues(alpha: 0.2)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.location_on_rounded, size: 14, color: SahayakColors.primary),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        widget.locationLabel ?? 'Flat 302, Green Meadows Apt, Ward 5',
-                        style: SahayakTypography.caption(color: SahayakColors.onSurface).copyWith(
-                          fontWeight: FontWeight.w700,
+            left: 10,
+            right: 10,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
+                      ],
+                      border: Border.all(color: SahayakColors.primary.withValues(alpha: 0.2)),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on_rounded, size: 14, color: SahayakColors.primary),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            widget.locationLabel ?? 'Flat 302, Green Meadows Apt, Ward 5',
+                            style: SahayakTypography.caption(color: SahayakColors.onSurface).copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                if (widget.showControls) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 4,
+                        ),
+                      ],
+                      border: Border.all(color: SahayakColors.outlineVariant.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.layers_rounded, size: 12, color: SahayakColors.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'GIS Ward 5',
+                          style: SahayakTypography.caption(color: SahayakColors.onSurface).copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
 
-          // Floating Layer Tag (Top Right)
-          if (widget.showControls)
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                    ),
-                  ],
-                  border: Border.all(color: SahayakColors.outlineVariant.withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.layers_rounded, size: 12, color: SahayakColors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      'GIS Ward 5',
-                      style: SahayakTypography.caption(color: SahayakColors.onSurface).copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Adjust Pin on Map (Bottom Left)
+          // Unified Bottom Controls (Never Collides)
           if (widget.showControls)
             Positioned(
               bottom: 10,
               left: 10,
-              child: InkWell(
-                onTap: widget.onAdjustPin ?? () {},
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: SahayakColors.primary,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: SahayakColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.tune_rounded, size: 12, color: SahayakColors.onPrimary),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Adjust Pin on Map',
-                        style: SahayakTypography.caption(color: SahayakColors.onPrimary).copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-          // Zoom Controls (Bottom Right)
-          if (widget.showControls)
-            Positioned(
-              bottom: 10,
               right: 10,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.95),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 4,
-                    ),
-                  ],
-                  border: Border.all(color: SahayakColors.outlineVariant.withValues(alpha: 0.4)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: _zoomIn,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.add, size: 16, color: SahayakColors.onSurface),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: widget.onAdjustPin ?? () {},
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: SahayakColors.primary,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: SahayakColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.tune_rounded, size: 12, color: SahayakColors.onPrimary),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Adjust Pin on Map',
+                            style: SahayakTypography.caption(color: SahayakColors.onPrimary).copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(height: 1, width: 24, color: SahayakColors.outlineVariant.withValues(alpha: 0.3)),
-                    InkWell(
-                      onTap: _zoomOut,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.remove, size: 16, color: SahayakColors.onSurface),
-                      ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: SahayakColors.surfaceContainerLowest.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 4,
+                        ),
+                      ],
+                      border: Border.all(color: SahayakColors.outlineVariant.withValues(alpha: 0.4)),
                     ),
-                  ],
-                ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: _zoomIn,
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Icon(Icons.add, size: 16, color: SahayakColors.onSurface),
+                          ),
+                        ),
+                        Container(height: 1, width: 24, color: SahayakColors.outlineVariant.withValues(alpha: 0.3)),
+                        InkWell(
+                          onTap: _zoomOut,
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Icon(Icons.remove, size: 16, color: SahayakColors.onSurface),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
         ],

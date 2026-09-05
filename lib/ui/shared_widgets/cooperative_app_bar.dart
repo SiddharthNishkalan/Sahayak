@@ -23,6 +23,7 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
   void _showWardPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: SahayakColors.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -37,68 +38,75 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ];
 
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      viewModel.strings.get('service_location_title'),
-                      style: SahayakTypography.headlineSm(),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Cooperative network guarantees rapid emergency response from the nearest local hub.',
-                  style: SahayakTypography.bodySm(),
-                ),
-                const SizedBox(height: 12),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  tileColor: SahayakColors.primaryFixed.withValues(alpha: 0.2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  leading: const Icon(Icons.my_location_rounded, color: SahayakColors.primary),
-                  title: Text(viewModel.strings.get('detect_live_gps'), style: SahayakTypography.labelMd(color: SahayakColors.primary)),
-                  subtitle: Text(viewModel.strings.get('detect_live_gps_sub')),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    viewModel.detectCurrentDeviceLocation();
-                  },
-                ),
-                const SizedBox(height: 10),
-                ...wards.map((ward) {
-                  final isSelected = viewModel.currentWard == ward;
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    leading: Icon(
-                      Icons.location_on_rounded,
-                      color: isSelected ? SahayakColors.primary : SahayakColors.outline,
-                    ),
-                    title: Text(
-                      ward,
-                      style: SahayakTypography.labelMd(
-                        color: isSelected ? SahayakColors.primary : SahayakColors.onSurface,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          viewModel.strings.get('service_location_title'),
+                          style: SahayakTypography.headlineSm(),
+                        ),
                       ),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check_circle, color: SahayakColors.primary)
-                        : null,
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Cooperative network guarantees rapid emergency response from the nearest local hub.',
+                    style: SahayakTypography.bodySm(),
+                  ),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    tileColor: SahayakColors.primaryFixed.withValues(alpha: 0.2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    leading: const Icon(Icons.my_location_rounded, color: SahayakColors.primary),
+                    title: Text(viewModel.strings.get('detect_live_gps'), style: SahayakTypography.labelMd(color: SahayakColors.primary)),
+                    subtitle: Text(viewModel.strings.get('detect_live_gps_sub')),
                     onTap: () {
-                      viewModel.updateWard(ward);
                       Navigator.pop(ctx);
+                      viewModel.detectCurrentDeviceLocation();
                     },
-                  );
-                }),
-              ],
+                  ),
+                  const SizedBox(height: 10),
+                  ...wards.map((ward) {
+                    final isSelected = viewModel.currentWard == ward;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      leading: Icon(
+                        Icons.location_on_rounded,
+                        color: isSelected ? SahayakColors.primary : SahayakColors.outline,
+                      ),
+                      title: Text(
+                        ward,
+                        style: SahayakTypography.labelMd(
+                          color: isSelected ? SahayakColors.primary : SahayakColors.onSurface,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle, color: SahayakColors.primary)
+                          : null,
+                      onTap: () {
+                        viewModel.updateWard(ward);
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         );

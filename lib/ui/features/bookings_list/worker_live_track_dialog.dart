@@ -147,6 +147,7 @@ class WorkerLiveTrackDialog extends StatelessWidget {
                 CustomVectorMap(
                   locationLabel: b.address.fullAddress,
                   interactive: true,
+                  showControls: false,
                 ),
                 Positioned(
                   top: 10,
