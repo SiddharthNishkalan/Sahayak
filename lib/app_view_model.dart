@@ -257,10 +257,20 @@ class AppViewModel extends ChangeNotifier {
   // Wizard Domain Selection
   void setService(ServiceItem service) {
     _wizardServiceName = service.title;
-    if (!_wizardIsMultiDomain) {
+    if (service.id != 'multi_trade') {
+      _wizardIsMultiDomain = false;
       _wizardSelectedDomains.clear();
       _wizardSelectedDomains.add(service.id);
     }
+    notifyListeners();
+  }
+
+  void setMultiTradeDomains(Set<String> domains) {
+    _wizardIsMultiDomain = true;
+    _wizardSelectedDomains.clear();
+    _wizardSelectedDomains.addAll(domains);
+    final domainTitles = domains.map((d) => d[0].toUpperCase() + d.substring(1)).join(' + ');
+    _wizardServiceName = 'Multi-Trade ($domainTitles)';
     notifyListeners();
   }
 

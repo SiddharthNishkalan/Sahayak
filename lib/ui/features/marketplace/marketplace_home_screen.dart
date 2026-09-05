@@ -111,152 +111,506 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
       ),
       builder: (ctx) {
         final services = widget.viewModel.repository.services;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: SahayakColors.outlineVariant,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        bool isMultiTradeMode = false;
+        final Set<String> selectedMultiDomains = {'plumbing', 'electrical'};
+
+        final tradeOptions = [
+          {'id': 'plumbing', 'name': 'Plumbing & Water', 'desc': 'Pipes, taps, leakages, drains', 'icon': Icons.plumbing_rounded},
+          {'id': 'electrical', 'name': 'Electrical & Power', 'desc': 'Wiring, switches, tripping, shorts', 'icon': Icons.bolt_rounded},
+          {'id': 'appliance', 'name': 'Appliances & Motors', 'desc': 'Water heaters, pumps, motors', 'icon': Icons.home_repair_service_rounded},
+          {'id': 'carpentry', 'name': 'Carpentry & Fittings', 'desc': 'Cabinets, hinges, woodwork', 'icon': Icons.carpenter_rounded},
+          {'id': 'cleaner', 'name': 'Deep Cleaning', 'desc': 'Sanitation, drain clearance', 'icon': Icons.cleaning_services_rounded},
+          {'id': 'painting', 'name': 'Painting & Sealing', 'desc': 'Waterproofing, moisture spots', 'icon': Icons.format_paint_rounded},
+        ];
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: SahayakColors.outlineVariant,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                isEmergency ? Icons.bolt_rounded : Icons.calendar_today_rounded,
-                                color: isEmergency ? SahayakColors.error : SahayakColors.primary,
-                                size: 20,
+                              Row(
+                                children: [
+                                  Icon(
+                                    isEmergency ? Icons.bolt_rounded : Icons.calendar_today_rounded,
+                                    color: isEmergency ? SahayakColors.error : SahayakColors.primary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      isEmergency
+                                          ? widget.viewModel.strings.get('emergency_request')
+                                          : widget.viewModel.strings.get('book_service'),
+                                      style: SahayakTypography.headlineSm(),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  isEmergency
-                                      ? widget.viewModel.strings.get('emergency_request')
-                                      : widget.viewModel.strings.get('book_service'),
-                                  style: SahayakTypography.headlineSm(),
-                                ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isMultiTradeMode
+                                    ? 'Cross-Trade Combined Diagnostic'
+                                    : (isEmergency ? 'Rapid · SOS · Nearest Pro' : 'Standard · Scheduled · Fair Rate'),
+                                style: SahayakTypography.caption(
+                                  color: isEmergency ? SahayakColors.error : SahayakColors.secondary,
+                                ).copyWith(fontWeight: FontWeight.w700),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            isEmergency ? 'Rapid · SOS · Nearest Pro' : 'Standard · Scheduled · Fair Rate',
-                            style: SahayakTypography.caption(
-                              color: isEmergency ? SahayakColors.error : SahayakColors.secondary,
-                            ).copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Choice Tabs: Single Domain vs Multi-Trade
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: SahayakColors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => setSheetState(() => isMultiTradeMode = false),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: !isMultiTradeMode ? SahayakColors.surfaceContainerLowest : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: !isMultiTradeMode
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.handyman_rounded,
+                                      size: 15,
+                                      color: !isMultiTradeMode ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Single Trade',
+                                      style: SahayakTypography.labelSm(
+                                        color: !isMultiTradeMode ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
+                                      ).copyWith(fontWeight: FontWeight.w700),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => setSheetState(() => isMultiTradeMode = true),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isMultiTradeMode ? SahayakColors.surfaceContainerLowest : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: isMultiTradeMode
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.hub_rounded, size: 15, color: SahayakColors.secondary),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Multi-Trade',
+                                      style: SahayakTypography.labelSm(
+                                        color: isMultiTradeMode ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
+                                      ).copyWith(fontWeight: FontWeight.w700),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: SahayakColors.secondaryFixed,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: const Text(
+                                        'Combo',
+                                        style: TextStyle(
+                                          color: SahayakColors.onSecondaryFixed,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                  ),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: services.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, idx) {
-                      final item = services[idx];
-                      return Material(
-                        color: SahayakColors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(14),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            _openBookingWizard(item, isEmergency);
-                          },
-                          borderRadius: BorderRadius.circular(14),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: isEmergency
-                                        ? SahayakColors.errorContainer
-                                        : SahayakColors.primaryFixed,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                    item.icon,
-                                    color: isEmergency
-                                        ? SahayakColors.onErrorContainer
-                                        : SahayakColors.primary,
-                                    size: 22,
-                                  ),
+                    const SizedBox(height: 12),
+
+                    if (!isMultiTradeMode) ...[
+                      // Shortcut Card to Multi-Trade
+                      InkWell(
+                        onTap: () => setSheetState(() => isMultiTradeMode = true),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: SahayakColors.secondaryFixed.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: SahayakColors.secondary.withValues(alpha: 0.25)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.hub_rounded, color: SahayakColors.secondary, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Need multiple trades together? (e.g. Plumber + Electrician)',
+                                      style: SahayakTypography.caption(color: SahayakColors.onSurface)
+                                          .copyWith(fontWeight: FontWeight.w700),
+                                    ),
+                                    Text(
+                                      'Combine trades into one cooperative diagnostic booking →',
+                                      style: SahayakTypography.caption(color: SahayakColors.secondary)
+                                          .copyWith(fontSize: 10),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: SahayakColors.secondary),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Single Trade List
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.45,
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: services.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (context, idx) {
+                            final item = services[idx];
+                            return Material(
+                              color: SahayakColors.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(14),
+                              child: InkWell(
+                                onTap: () {
+                                  widget.viewModel.toggleMultiDomain(false);
+                                  Navigator.pop(ctx);
+                                  _openBookingWizard(item, isEmergency);
+                                },
+                                borderRadius: BorderRadius.circular(14),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        item.title,
-                                        style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
+                                      Container(
+                                        width: 42,
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: isEmergency
+                                              ? SahayakColors.errorContainer
+                                              : SahayakColors.primaryFixed,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Icon(
+                                          item.icon,
+                                          color: isEmergency
+                                              ? SahayakColors.onErrorContainer
+                                              : SahayakColors.primary,
+                                          size: 22,
+                                        ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        item.description,
-                                        style: SahayakTypography.bodySm(),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.title,
+                                              style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              item.description,
+                                              style: SahayakTypography.bodySm(),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: isEmergency
+                                              ? SahayakColors.errorContainer.withValues(alpha: 0.5)
+                                              : SahayakColors.primaryFixed.withValues(alpha: 0.5),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          widget.viewModel.strings.get('worker_quote'),
+                                          style: SahayakTypography.caption(
+                                            color: isEmergency ? SahayakColors.error : SahayakColors.primary,
+                                          ).copyWith(fontWeight: FontWeight.w700),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.chevron_right_rounded, color: SahayakColors.outline),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: isEmergency
-                                        ? SahayakColors.errorContainer.withValues(alpha: 0.5)
-                                        : SahayakColors.primaryFixed.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    widget.viewModel.strings.get('worker_quote'),
-                                    style: SahayakTypography.caption(
-                                      color: isEmergency ? SahayakColors.error : SahayakColors.primary,
-                                    ).copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ] else ...[
+                      // Multi-Trade Info Note
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: SahayakColors.secondaryFixed.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline_rounded, size: 16, color: SahayakColors.secondary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Select 2 or more trade domains below. Cooperative specialists qualified across all selected trades will be alerted.',
+                                style: SahayakTypography.caption(color: SahayakColors.onSurface),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Multi-Trade Checkbox List
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.38,
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: tradeOptions.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 6),
+                          itemBuilder: (context, idx) {
+                            final trade = tradeOptions[idx];
+                            final id = trade['id'] as String;
+                            final isSelected = selectedMultiDomains.contains(id);
+
+                            return InkWell(
+                              onTap: () {
+                                setSheetState(() {
+                                  if (isSelected) {
+                                    if (selectedMultiDomains.length > 1) {
+                                      selectedMultiDomains.remove(id);
+                                    }
+                                  } else {
+                                    selectedMultiDomains.add(id);
+                                  }
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? SahayakColors.surfaceContainerHigh
+                                      : SahayakColors.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected ? SahayakColors.secondary : Colors.transparent,
+                                    width: isSelected ? 1.5 : 1.0,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.chevron_right_rounded, color: SahayakColors.outline),
-                              ],
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      trade['icon'] as IconData,
+                                      size: 22,
+                                      color: isSelected ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            trade['name'] as String,
+                                            style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
+                                          ),
+                                          Text(
+                                            trade['desc'] as String,
+                                            style: SahayakTypography.caption(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      isSelected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                                      color: isSelected ? SahayakColors.secondary : SahayakColors.outline,
+                                      size: 22,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Multi-Trade Summary & Continue Action
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: selectedMultiDomains.length >= 2
+                              ? SahayakColors.secondaryFixed.withValues(alpha: 0.3)
+                              : SahayakColors.errorContainer.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              selectedMultiDomains.length >= 2
+                                  ? '${selectedMultiDomains.length} Trades Selected'
+                                  : 'Select at least 2 trades',
+                              style: SahayakTypography.caption(
+                                color: selectedMultiDomains.length >= 2
+                                    ? SahayakColors.secondary
+                                    : SahayakColors.error,
+                              ).copyWith(fontWeight: FontWeight.w700),
                             ),
+                            Icon(
+                              selectedMultiDomains.length >= 2
+                                  ? Icons.check_circle_rounded
+                                  : Icons.info_outline_rounded,
+                              size: 16,
+                              color: selectedMultiDomains.length >= 2
+                                  ? SahayakColors.secondary
+                                  : SahayakColors.error,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: selectedMultiDomains.length >= 2
+                              ? () {
+                                  widget.viewModel.setMultiTradeDomains(selectedMultiDomains);
+                                  widget.viewModel.setTimingMode(isEmergency: isEmergency);
+                                  Navigator.pop(ctx);
+                                  final comboNames = selectedMultiDomains
+                                      .map((d) => d[0].toUpperCase() + d.substring(1))
+                                      .join(' + ');
+                                  final multiService = ServiceItem(
+                                    id: 'multi_trade',
+                                    title: 'Multi-Trade ($comboNames)',
+                                    description:
+                                        'Combined multi-domain diagnostic across ${selectedMultiDomains.join(', ')}',
+                                    basePrice: 0,
+                                    priceUnit: 'quote',
+                                    nearCount: 18,
+                                    icon: Icons.hub_rounded,
+                                  );
+                                  _openBookingWizard(multiService, isEmergency);
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: SahayakColors.secondary,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: SahayakColors.surfaceContainerHigh,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.hub_rounded, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                selectedMultiDomains.length >= 2
+                                    ? 'Continue with ${selectedMultiDomains.length} Trades'
+                                    : 'Select 2+ Trades to Continue',
+                                style: SahayakTypography.labelMd(color: Colors.white)
+                                    .copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded, size: 16),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

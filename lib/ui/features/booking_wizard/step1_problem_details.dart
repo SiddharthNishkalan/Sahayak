@@ -266,245 +266,91 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
 
                         const SizedBox(height: 16),
 
-                        // 3. Segmented Intent Tab Row
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: SahayakColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: List.generate(_intentTabs.length, (idx) {
-                              final isSel = _selectedIntentTab == idx;
-                              return Expanded(
-                                child: InkWell(
-                                  onTap: () => setState(() => _selectedIntentTab = idx),
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: isSel ? SahayakColors.surfaceContainerLowest : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: isSel
-                                          ? [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(alpha: 0.04),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      _intentTabs[idx],
-                                      style: SahayakTypography.caption(
-                                        color: isSel ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
-                                      ).copyWith(fontWeight: isSel ? FontWeight.w800 : FontWeight.w600),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // 4. Domain Selection Mode (Exact Domain vs Multi-Trade)
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: SahayakColors.borderSubtle),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Service Subcategories',
-                                      style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: isMultiDomain
-                                          ? SahayakColors.secondaryFixed
-                                          : SahayakColors.primaryFixed,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Text(
-                                      isMultiDomain ? '${selectedDomains.length} Multi-Trades' : 'Single Trade',
-                                      style: SahayakTypography.caption(
-                                        color: isMultiDomain ? SahayakColors.onSecondaryFixed : SahayakColors.primary,
-                                      ).copyWith(fontWeight: FontWeight.w700),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              // Choice Tabs: Exact Domain vs Multi-Trade
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: SahayakColors.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () => setState(() => widget.viewModel.toggleMultiDomain(false)),
+                        if (!isMultiDomain) ...[
+                          // 3. Segmented Intent Tab Row
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: SahayakColors.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: List.generate(_intentTabs.length, (idx) {
+                                final isSel = _selectedIntentTab == idx;
+                                return Expanded(
+                                  child: InkWell(
+                                    onTap: () => setState(() => _selectedIntentTab = idx),
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isSel ? SahayakColors.surfaceContainerLowest : Colors.transparent,
                                         borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: !isMultiDomain ? SahayakColors.surfaceContainerLowest : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(10),
-                                            boxShadow: !isMultiDomain
-                                                ? [
-                                                    BoxShadow(
-                                                      color: Colors.black.withValues(alpha: 0.05),
-                                                      blurRadius: 4,
-                                                      offset: const Offset(0, 1),
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            'Exact Domain',
-                                            style: SahayakTypography.labelSm(
-                                              color: !isMultiDomain ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
-                                            ).copyWith(fontWeight: FontWeight.w700),
-                                          ),
-                                        ),
+                                        boxShadow: isSel
+                                            ? [
+                                                BoxShadow(
+                                                  color: Colors.black.withValues(alpha: 0.04),
+                                                  blurRadius: 4,
+                                                  offset: const Offset(0, 1),
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        _intentTabs[idx],
+                                        style: SahayakTypography.caption(
+                                          color: isSel ? SahayakColors.primary : SahayakColors.onSurfaceVariant,
+                                        ).copyWith(fontWeight: isSel ? FontWeight.w800 : FontWeight.w600),
                                       ),
                                     ),
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () => setState(() => widget.viewModel.toggleMultiDomain(true)),
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: isMultiDomain ? SahayakColors.surfaceContainerLowest : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(10),
-                                            boxShadow: isMultiDomain
-                                                ? [
-                                                    BoxShadow(
-                                                      color: Colors.black.withValues(alpha: 0.05),
-                                                      blurRadius: 4,
-                                                      offset: const Offset(0, 1),
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.hub_rounded, size: 14, color: SahayakColors.secondary),
-                                              const SizedBox(width: 4),
-                                              Flexible(
-                                                child: Text(
-                                                  'Multi-Trade',
-                                                  style: SahayakTypography.labelSm(
-                                                    color: isMultiDomain ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
-                                                  ).copyWith(fontWeight: FontWeight.w700),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // 4. Service Subcategories Grid (Single Trade)
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: SahayakColors.surfaceContainerLowest,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: SahayakColors.borderSubtle),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'Service Subcategories',
+                                        style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: SahayakColors.primaryFixed,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        '${filteredSubcategories.length} Options',
+                                        style: SahayakTypography.caption(
+                                          color: SahayakColors.primary,
+                                        ).copyWith(fontWeight: FontWeight.w700),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
+                                const SizedBox(height: 12),
 
-                              // Multi-Domain Picker UI
-                              if (isMultiDomain) ...[
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: SahayakColors.secondaryFixed.withValues(alpha: 0.35),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Icon(Icons.info_outline_rounded, size: 16, color: SahayakColors.secondary),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Select multiple possible trades if unsure. Nearby workers across all selected trades will be alerted.',
-                                          style: SahayakTypography.caption(color: SahayakColors.onSurface),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Column(
-                                  children: _tradeDomains.map((trade) {
-                                    final id = trade['id'] as String;
-                                    final isSelected = selectedDomains.contains(id);
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
-                                      child: InkWell(
-                                        onTap: () => setState(() => widget.viewModel.toggleDomainSelection(id)),
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: isSelected
-                                                ? SahayakColors.surfaceContainerHigh
-                                                : SahayakColors.surfaceContainerLow,
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: isSelected ? SahayakColors.primary : Colors.transparent,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(trade['icon'] as IconData,
-                                                  size: 20, color: isSelected ? SahayakColors.primary : SahayakColors.onSurfaceVariant),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(trade['name'] as String,
-                                                        style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700)),
-                                                    Text(trade['desc'] as String, style: SahayakTypography.caption()),
-                                                  ],
-                                                ),
-                                              ),
-                                              Icon(
-                                                isSelected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                                                color: isSelected ? SahayakColors.primary : SahayakColors.outline,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ] else ...[
-                                const SizedBox(height: 12),
-                                // 5. Service Variant Grid with Individual Pricing
+                                // Service Variant Grid with Individual Pricing
                                 GridView.count(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
@@ -585,9 +431,96 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                   }).toList(),
                                 ),
                               ],
-                            ],
+                            ),
                           ),
-                        ),
+                        ] else ...[
+                          // Multi-Trade Request Scope Card
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: SahayakColors.surfaceContainerLowest,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: SahayakColors.borderSubtle),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.hub_rounded, size: 20, color: SahayakColors.secondary),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Multi-Trade Request Scope',
+                                              style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: SahayakColors.secondaryFixed,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        '${selectedDomains.length} Trades Active',
+                                        style: SahayakTypography.caption(
+                                          color: SahayakColors.onSecondaryFixed,
+                                        ).copyWith(fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Your request combines multiple trade domains. Nearby certified cooperative technicians capable of cross-trade diagnostics will be notified.',
+                                  style: SahayakTypography.bodySm(color: SahayakColors.onSurfaceVariant),
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: selectedDomains.map((d) {
+                                    final trade = _tradeDomains.firstWhere(
+                                      (t) => t['id'] == d,
+                                      orElse: () => {
+                                        'name': d[0].toUpperCase() + d.substring(1),
+                                        'icon': Icons.handyman_rounded
+                                      },
+                                    );
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: SahayakColors.surfaceContainerHigh,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: SahayakColors.secondary.withValues(alpha: 0.4)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(trade['icon'] as IconData, size: 16, color: SahayakColors.secondary),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            trade['name'] as String,
+                                            style: SahayakTypography.labelSm(color: SahayakColors.onSurface)
+                                                .copyWith(fontWeight: FontWeight.w700),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: 14),
 
