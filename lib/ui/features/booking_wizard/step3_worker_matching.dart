@@ -84,7 +84,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
               child: Text(
                 'Worker Bids & Acceptance',
                 style: SahayakTypography.headlineSm(),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -109,7 +108,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                               child: Text(
                                 'Available Technician Offers',
                                 style: SahayakTypography.headlineSm(),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -231,7 +229,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                                         child: Text(
                                                           worker.name,
                                                           style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
-                                                          overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
                                                       const SizedBox(width: 4),
@@ -245,7 +242,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                                         child: Text(
                                                           '${worker.society} · ${worker.distanceKm} km away',
                                                           style: SahayakTypography.caption(color: SahayakColors.onSurfaceVariant),
-                                                          overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
                                                     ],
@@ -279,7 +275,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                                 child: Text(
                                                   offer.note,
                                                   style: SahayakTypography.caption().copyWith(fontWeight: FontWeight.w600),
-                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -462,12 +457,10 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                   Text(
                                     'Selected: ${selectedOffer.worker.name}',
                                     style: SahayakTypography.labelMd(),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
                                     'Visit Fee: ₹${selectedOffer.quotedVisitFee.toInt()} · Doorstep OTP on confirm',
                                     style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -480,7 +473,7 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                'Fixed Rate',
+                                'Worker Quoted',
                                 style: SahayakTypography.caption(color: SahayakColors.onSecondaryFixed)
                                     .copyWith(fontWeight: FontWeight.w800, fontSize: 10),
                               ),
@@ -496,7 +489,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                               Flexible(
                                 child: Text(
                                   'Confirm Booking with ${selectedOffer.worker.name.split(" ")[0]}',
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -656,7 +648,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                             Text(
                               review.authorName,
                               style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
-                              overflow: TextOverflow.ellipsis,
                             ),
                             Text('Verified Resident · 2 days ago', style: SahayakTypography.caption().copyWith(fontSize: 10)),
                           ],

@@ -36,7 +36,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     },
     {
       'title': 'Monsoon Drainage & Pipe Check',
-      'subtitle': 'Pre-monsoon roof inspection, concealed pipe and drain clearance from ₹249.',
+      'subtitle': 'Pre-monsoon roof inspection, concealed pipe and drain clearance. Fair quotes by verified pros.',
       'badge': 'Seasonal Shield',
       'icon': Icons.water_damage_rounded,
       'color': SahayakColors.secondary,
@@ -150,7 +150,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                       ? widget.viewModel.strings.get('emergency_request')
                                       : widget.viewModel.strings.get('book_service'),
                                   style: SahayakTypography.headlineSm(),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -225,7 +224,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                       Text(
                                         item.description,
                                         style: SahayakTypography.bodySm(),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
@@ -318,7 +316,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                   style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -477,7 +474,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                       Text(
                                         item.description,
                                         style: SahayakTypography.caption(),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
@@ -485,9 +481,9 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text('From ₹${item.basePrice}',
+                                    Text('Worker Quoted',
                                         style: SahayakTypography.labelSm(color: SahayakColors.primary)
-                                            .copyWith(fontWeight: FontWeight.w800)),
+                                            .copyWith(fontWeight: FontWeight.w700)),
                                     Text('4.9 ★ (${item.nearCount}+)', style: SahayakTypography.caption()),
                                   ],
                                 ),
@@ -510,7 +506,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       child: Text(
                         'All Services',
                         style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w800),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -518,7 +513,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       child: Text(
                         '8 Cooperative Trades',
                         style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -541,7 +535,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       child: Text(
                         viewModel.strings.get('choose_mode'),
                         style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w800),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -549,7 +542,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       child: Text(
                         viewModel.strings.get('choose_mode_sub'),
                         style: SahayakTypography.caption(),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -601,7 +593,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       child: Text(
                         'Popular Services',
                         style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w800),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     TextButton(
@@ -629,7 +620,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                             child: Text(
                               'Rapid Emergency (SOS)',
                               style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w800),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -704,7 +694,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
       itemCount: services.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 0.78,
+        childAspectRatio: 0.82,
         crossAxisSpacing: 8,
         mainAxisSpacing: 10,
       ),
@@ -740,12 +730,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                 service.title,
                 style: SahayakTypography.caption().copyWith(fontWeight: FontWeight.w700),
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                '₹${service.basePrice}',
-                style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontSize: 10, fontWeight: FontWeight.w600),
+                maxLines: 2,
               ),
             ],
           ),
@@ -759,7 +744,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 128,
+          height: 138,
           child: PageView.builder(
             controller: _bannerPageController,
             itemCount: _promoBanners.length,
@@ -801,15 +786,11 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                           Text(
                             banner['title'] as String,
                             style: SahayakTypography.labelMd().copyWith(fontWeight: FontWeight.w800),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
                             banner['subtitle'] as String,
                             style: SahayakTypography.caption(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -894,8 +875,6 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
               Text(
                 title,
                 style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w800),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
@@ -914,7 +893,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     final services = widget.viewModel.repository.services;
 
     return SizedBox(
-      height: 156,
+      height: 168,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: services.length,
@@ -922,7 +901,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
         itemBuilder: (context, idx) {
           final service = services[idx];
           return Container(
-            width: 150,
+            width: 160,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: SahayakColors.surfaceContainerLowest,
@@ -963,8 +942,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                     Text(
                       service.title,
                       style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
                     Text(
                       '~45 mins',
@@ -975,10 +953,16 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '₹${service.basePrice}',
-                      style: SahayakTypography.labelSm(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w800),
+                    Flexible(
+                      child: Text(
+                        'Worker Quote',
+                        style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 4),
                     InkWell(
                       onTap: () => _openBookingWizard(service, isEmergency),
                       borderRadius: BorderRadius.circular(8),

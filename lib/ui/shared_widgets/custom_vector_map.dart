@@ -115,7 +115,6 @@ class _CustomVectorMapState extends State<CustomVectorMap>
                         style: SahayakTypography.caption(color: SahayakColors.onSurface).copyWith(
                           fontWeight: FontWeight.w700,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

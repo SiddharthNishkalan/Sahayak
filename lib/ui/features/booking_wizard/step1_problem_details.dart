@@ -123,11 +123,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.service.title} Booking', style: SahayakTypography.labelLg(), overflow: TextOverflow.ellipsis),
+                  Text('${widget.service.title} Booking', style: SahayakTypography.labelLg()),
                   Text(
                     'Step 1 of 2 · Problem Specification',
                     style: SahayakTypography.caption(color: SahayakColors.primary),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -174,9 +173,8 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Cooperative Certified • Fixed Standard Rates • 0% Broker Markup',
+                                  'Cooperative Certified • Worker Quoted Pricing • 0% Broker Markup',
                                   style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -222,7 +220,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                           child: Text(
                                             widget.service.title,
                                             style: SahayakTypography.headlineSm().copyWith(fontWeight: FontWeight.w800),
-                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         const SizedBox(width: 6),
@@ -244,18 +241,21 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                     Text(
                                       widget.service.description,
                                       style: SahayakTypography.bodySm(),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Starts at ₹${widget.service.basePrice}',
-                                          style: SahayakTypography.labelSm(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w800),
-                                        ),
-                                        Text(' · ${widget.service.priceUnit} rate', style: SahayakTypography.caption()),
-                                      ],
+                                    Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Worker Quoted Pricing',
+                                            style: SahayakTypography.labelSm(color: SahayakColors.primary).copyWith(fontWeight: FontWeight.w700),
+                                          ),
+                                          TextSpan(
+                                            text: ' · Direct pro quotes',
+                                            style: SahayakTypography.caption(),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -329,7 +329,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                     child: Text(
                                       'Service Subcategories',
                                       style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w700),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -421,7 +420,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                                   style: SahayakTypography.labelSm(
                                                     color: isMultiDomain ? SahayakColors.secondary : SahayakColors.onSurfaceVariant,
                                                   ).copyWith(fontWeight: FontWeight.w700),
-                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -516,7 +514,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                   childAspectRatio: 1.15,
                                   children: filteredSubcategories.map((sub) {
                                     final isSel = sub.id == selectedSubId;
-                                    final price = sub.id == 'tank' ? 399 : (sub.id == 'drainage' ? 349 : 249);
                                     return InkWell(
                                       onTap: () => setState(() {
                                         widget.viewModel.setSubcategory(sub.id);
@@ -567,16 +564,15 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                                 Text(
                                                   sub.title,
                                                   style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 2,
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
-                                                    Text('₹$price base',
+                                                    Text('Worker Quote',
                                                         style: SahayakTypography.caption(color: SahayakColors.primary)
-                                                            .copyWith(fontWeight: FontWeight.w800)),
+                                                            .copyWith(fontWeight: FontWeight.w700)),
                                                     Text('~45m', style: SahayakTypography.caption().copyWith(fontSize: 10)),
                                                   ],
                                                 ),
@@ -683,7 +679,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                     child: Text(
                                       'Attach Photos & Video (Optional)',
                                       style: SahayakTypography.labelMd(),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -892,7 +887,6 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                         Flexible(
                           child: Text(
                             'Continue to Time & Location',
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         SizedBox(width: 8),

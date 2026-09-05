@@ -50,6 +50,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Doorstep OTP Dialog triggers
+    await tester.ensureVisible(find.text('Doorstep OTP'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Doorstep OTP'));
     await tester.pumpAndSettle();
     expect(find.text('Doorstep Verification OTP'), findsOneWidget);

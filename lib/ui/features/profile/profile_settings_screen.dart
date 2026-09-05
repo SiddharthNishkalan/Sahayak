@@ -223,43 +223,36 @@ class ProfileSettingsScreen extends StatelessWidget {
                               color: CooperativeColors.onSurface,
                               fontWeight: FontWeight.w800,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             s.get('profile_sub'),
                             style: CooperativeTypography.bodySm.copyWith(
                               color: CooperativeColors.onSurfaceVariant,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: CooperativeColors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.verified, size: 15, color: CooperativeColors.secondary),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                viewModel.currentUser?.society ?? viewModel.userSociety,
-                                style: CooperativeTypography.labelSm.copyWith(
-                                  color: CooperativeColors.secondary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: CooperativeColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.verified, size: 15, color: CooperativeColors.secondary),
+                          const SizedBox(width: 4),
+                          Text(
+                            viewModel.currentUser?.society ?? viewModel.userSociety,
+                            style: CooperativeTypography.labelSm.copyWith(
+                              color: CooperativeColors.secondary,
+                              fontWeight: FontWeight.w700,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -338,7 +331,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                           color: CooperativeColors.onSurface,
                                           fontWeight: FontWeight.w700,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     IconButton(
@@ -372,7 +364,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                             color: CooperativeColors.onSecondaryContainer,
                                             fontWeight: FontWeight.w700,
                                           ),
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
@@ -412,8 +403,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                                       Text(s.get('primary_contact'),
                                           style: CooperativeTypography.caption.copyWith(
                                             color: CooperativeColors.onSurfaceVariant,
-                                          ),
-                                          overflow: TextOverflow.ellipsis),
+                                          )),
                                       Text(
                                           viewModel.currentUser?.phone.isNotEmpty == true
                                               ? viewModel.currentUser!.phone
@@ -421,8 +411,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                                           style: CooperativeTypography.labelMd.copyWith(
                                             color: CooperativeColors.onSurface,
                                             fontWeight: FontWeight.w700,
-                                          ),
-                                          overflow: TextOverflow.ellipsis),
+                                          )),
                                     ],
                                   ),
                                 ),
@@ -462,8 +451,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                                       Text(s.get('invoicing_email'),
                                           style: CooperativeTypography.caption.copyWith(
                                             color: CooperativeColors.onSurfaceVariant,
-                                          ),
-                                          overflow: TextOverflow.ellipsis),
+                                          )),
                                       Text(
                                           viewModel.currentUser?.email.isNotEmpty == true
                                               ? viewModel.currentUser!.email
@@ -471,8 +459,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                                           style: CooperativeTypography.labelMd.copyWith(
                                             color: CooperativeColors.onSurface,
                                             fontWeight: FontWeight.w700,
-                                          ),
-                                          overflow: TextOverflow.ellipsis),
+                                          )),
                                     ],
                                   ),
                                 ),
@@ -554,7 +541,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                     color: CooperativeColors.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -591,7 +577,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                     color: CooperativeColors.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -625,7 +610,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                   color: CooperativeColors.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -653,7 +637,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                 color: CooperativeColors.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -702,10 +685,14 @@ class ProfileSettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 6,
                         children: [
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.account_balance, color: CooperativeColors.primary, size: 20),
                               const SizedBox(width: 8),
@@ -793,7 +780,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                 color: CooperativeColors.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -840,8 +826,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                             fontWeight: FontWeight.w700,
                                             color: isSelected ? CooperativeColors.onPrimary : CooperativeColors.onSurface,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         Text(
                                           lang.name,
@@ -851,8 +835,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                                 ? CooperativeColors.onPrimary.withValues(alpha: 0.8)
                                                 : CooperativeColors.onSurfaceVariant,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -903,7 +885,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                 color: CooperativeColors.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -969,7 +950,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                 color: CooperativeColors.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -1029,7 +1009,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                                 color: CooperativeColors.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -1049,8 +1028,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(s.get('support_helpline'),
-                                    style: CooperativeTypography.bodyMd.copyWith(color: CooperativeColors.onSurface),
-                                    overflow: TextOverflow.ellipsis),
+                                    style: CooperativeTypography.bodyMd.copyWith(color: CooperativeColors.onSurface)),
                               ),
                               const SizedBox(width: 8),
                               Text('1800 425 0005',
@@ -1167,7 +1145,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                           color: CooperativeColors.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (addr.isDefault) ...[
@@ -1249,7 +1226,6 @@ class ProfileSettingsScreen extends StatelessWidget {
                             color: CooperativeColors.secondary,
                             fontWeight: FontWeight.w700,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -1392,14 +1368,13 @@ class ProfileSettingsScreen extends StatelessWidget {
                       color: CooperativeColors.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: CooperativeTypography.caption.copyWith(
                       color: CooperativeColors.onSurfaceVariant,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

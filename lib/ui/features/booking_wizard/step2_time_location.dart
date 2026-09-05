@@ -101,11 +101,10 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Booking Wizard · Step 2', style: SahayakTypography.labelLg(), overflow: TextOverflow.ellipsis),
+                  Text('Booking Wizard · Step 2', style: SahayakTypography.labelLg()),
                   Text(
                     'Sahayak Co-op • Schedule & Society Dispatch',
                     style: SahayakTypography.caption(color: SahayakColors.primary),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -167,12 +166,9 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            'Time & Location',
-                                            style: SahayakTypography.headlineSm(),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                        Text(
+                                          'Time & Location',
+                                          style: SahayakTypography.headlineSm(),
                                         ),
                                       ],
                                     ),
@@ -496,8 +492,6 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                           decoration: disabled ? TextDecoration.lineThrough : null,
                                           fontWeight: isSel ? FontWeight.w700 : FontWeight.w600,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         subText,
@@ -526,7 +520,6 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                               child: Text(
                                 'Service Location',
                                 style: SahayakTypography.headlineSm(),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -548,7 +541,6 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                         style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(
                                           fontWeight: FontWeight.w700,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],
@@ -594,7 +586,6 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                         Text(
                                           '${selectedAddr.streetAddress} (${selectedAddr.society})',
                                           style: SahayakTypography.bodySm(),
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -711,7 +702,6 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                             isEmergency
                                 ? '⚡ Broadcast Emergency Dispatch'
                                 : 'Broadcast to Nearest Society Workers',
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),

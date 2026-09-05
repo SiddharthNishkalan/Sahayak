@@ -175,7 +175,6 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                             style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(
                               fontWeight: FontWeight.w700,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -280,7 +279,6 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                               child: Text(
                                 s.get('enter_otp'),
                                 style: SahayakTypography.labelMd(),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 6),
@@ -329,7 +327,6 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                                     child: Text(
                                       '${s.get('resend_otp_in')} 00:${_secondsRemaining.toString().padLeft(2, '0')}',
                                       style: SahayakTypography.labelSm(color: SahayakColors.onSurfaceVariant),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],

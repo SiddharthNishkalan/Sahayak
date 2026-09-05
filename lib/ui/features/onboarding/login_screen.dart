@@ -245,7 +245,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(
                               fontWeight: FontWeight.w700,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -283,7 +282,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             child: Text(
                               s.get('continue_google'),
                               style: SahayakTypography.labelMd(color: SahayakColors.onSurface).copyWith(fontWeight: FontWeight.w700),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -422,7 +420,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       child: Text(
                         s.get('remember_device'),
                         style: SahayakTypography.bodySm(),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

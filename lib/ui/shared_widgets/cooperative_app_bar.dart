@@ -158,13 +158,11 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                           Text(
                             customTitle!,
                             style: SahayakTypography.headlineSm(),
-                            overflow: TextOverflow.ellipsis,
                           ),
                           if (customSubtitle != null)
                             Text(
                               customSubtitle!,
                               style: SahayakTypography.caption(color: SahayakColors.primary),
-                              overflow: TextOverflow.ellipsis,
                             ),
                         ],
                       )
@@ -185,7 +183,6 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   child: Text(
                                     '📍 ${viewModel.currentWard}',
                                     style: SahayakTypography.labelMd(color: SahayakColors.primary),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 const Icon(

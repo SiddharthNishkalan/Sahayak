@@ -99,8 +99,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             const Icon(Icons.verified, color: CooperativeColors.secondaryContainer, size: 20),
             Flexible(
               child: Text('Review & Rating (*) submitted to Worker Guild!',
-                  style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onPrimary),
-                  overflow: TextOverflow.ellipsis),
+                  style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onPrimary)),
             ),
           ],
         ),
@@ -1804,8 +1803,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Flexible(
                 child: Text(
                   label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
