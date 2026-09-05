@@ -7,6 +7,7 @@ import '../../../data/models/booking.dart';
 import '../../../data/repositories/app_repository.dart';
 import '../../../app_view_model.dart';
 import 'edit_address_bottom_sheet.dart';
+import 'tax_invoice_dialog.dart';
 
 class ProfileSettingsScreen extends StatelessWidget {
   final AppViewModel viewModel;
@@ -684,6 +685,86 @@ class ProfileSettingsScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
+                // Cooperative Membership & Finance
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: CooperativeColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.account_balance, color: CooperativeColors.primary, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Cooperative Finance & Shares',
+                                style: CooperativeTypography.headlineSm.copyWith(
+                                  color: CooperativeColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: CooperativeColors.secondaryContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Active Member',
+                              style: CooperativeTypography.caption.copyWith(
+                                color: CooperativeColors.onSecondaryContainer,
+                                fontWeight: FontWeight.w700,
+                              ).copyWith(fontSize: 10),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPlainSettingsTile(
+                        icon: Icons.savings_outlined,
+                        iconColor: CooperativeColors.secondary,
+                        title: 'Member Share Capital',
+                        subtitle: '10 Voting Shares in Municipal Guild',
+                        trailingText: '₹1,000',
+                      ),
+                      const Divider(height: 16, thickness: 0.5, color: CooperativeColors.surfaceContainerHigh),
+                      _buildPlainSettingsTile(
+                        icon: Icons.pie_chart_outline,
+                        iconColor: CooperativeColors.tertiary,
+                        title: 'Annual Patronage Dividend',
+                        subtitle: 'FY25-26 Cooperative Surplus Pool',
+                        trailingText: '8.4% Return',
+                      ),
+                      const Divider(height: 16, thickness: 0.5, color: CooperativeColors.surfaceContainerHigh),
+                      _buildPlainSettingsTile(
+                        icon: Icons.receipt_long_outlined,
+                        iconColor: CooperativeColors.primary,
+                        title: 'Tax Invoices & GST Receipts',
+                        subtitle: 'Official tax invoice with cooperative GSTIN',
+                        onTap: () => TaxInvoiceDialog.show(context),
+                        showChevron: true,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
                 // App Language Selection Section
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -1271,6 +1352,81 @@ class ProfileSettingsScreen extends StatelessWidget {
           ),
           const Icon(Icons.chevron_right, color: CooperativeColors.outline, size: 18),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPlainSettingsTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    String? trailingText,
+    VoidCallback? onTap,
+    bool showChevron = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: iconColor, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: CooperativeTypography.labelMd.copyWith(
+                      color: CooperativeColors.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    subtitle,
+                    style: CooperativeTypography.caption.copyWith(
+                      color: CooperativeColors.onSurfaceVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (trailingText != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: CooperativeColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  trailingText,
+                  style: CooperativeTypography.labelSm.copyWith(
+                    color: CooperativeColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+            if (showChevron) ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.chevron_right, size: 18, color: CooperativeColors.outline),
+            ],
+          ],
+        ),
       ),
     );
   }
