@@ -3,6 +3,8 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../app_view_model.dart';
 
+import 'package:flutter/services.dart';
+
 class CooperativeBottomNavBar extends StatelessWidget {
   final AppViewModel viewModel;
 
@@ -15,7 +17,7 @@ class CooperativeBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: SahayakColors.surface.withValues(alpha: 0.92),
+        color: SahayakColors.surface.withValues(alpha: 0.96),
         border: const Border(
           top: BorderSide(color: SahayakColors.borderSubtle, width: 1),
         ),
@@ -30,7 +32,7 @@ class CooperativeBottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 62,
+          height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -38,20 +40,29 @@ class CooperativeBottomNavBar extends StatelessWidget {
                 icon: Icons.home_rounded,
                 label: viewModel.strings.get('home_nav'),
                 isSelected: viewModel.currentTab == ShellTab.home,
-                onTap: () => viewModel.switchTab(ShellTab.home),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  viewModel.switchTab(ShellTab.home);
+                },
               ),
               _buildNavItem(
                 icon: Icons.event_note_rounded,
                 label: viewModel.strings.get('bookings_nav'),
                 isSelected: viewModel.currentTab == ShellTab.bookings,
                 badgeCount: 1,
-                onTap: () => viewModel.switchTab(ShellTab.bookings),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  viewModel.switchTab(ShellTab.bookings);
+                },
               ),
               _buildNavItem(
                 icon: Icons.person_rounded,
                 label: viewModel.strings.get('profile_nav'),
                 isSelected: viewModel.currentTab == ShellTab.profile,
-                onTap: () => viewModel.switchTab(ShellTab.profile),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  viewModel.switchTab(ShellTab.profile);
+                },
               ),
             ],
           ),
@@ -71,8 +82,9 @@ class CooperativeBottomNavBar extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 64, minHeight: 48),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,

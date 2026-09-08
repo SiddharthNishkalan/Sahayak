@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sahayak_home_services/app_view_model.dart';
-import 'package:sahayak_home_services/data/repositories/app_repository.dart';
-import 'package:sahayak_home_services/data/models/service.dart';
-import 'package:sahayak_home_services/ui/features/marketplace/marketplace_home_screen.dart';
-import 'package:sahayak_home_services/ui/features/booking_wizard/step1_problem_details.dart';
+import 'package:work_solute/app_view_model.dart';
+import 'package:work_solute/data/repositories/app_repository.dart';
+import 'package:work_solute/data/models/service.dart';
+import 'package:work_solute/ui/features/marketplace/marketplace_home_screen.dart';
+import 'package:work_solute/ui/features/booking_wizard/step1_problem_details.dart';
 
 void main() {
   testWidgets('Marketplace Book a Service opens sheet showing Single Trade and Multi-Trade options', (WidgetTester tester) async {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../data/models/service.dart';
@@ -33,10 +35,11 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
   }
 
   void _confirmBooking() {
+    HapticFeedback.mediumImpact();
     final booking = widget.viewModel.confirmAndCreateBooking();
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => BookingConfirmationScreen(
           viewModel: widget.viewModel,
           booking: booking,
@@ -62,45 +65,29 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
     return Scaffold(
       backgroundColor: SahayakColors.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: SahayakColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: SahayakColors.borderSubtle),
-              ),
-              padding: const EdgeInsets.all(2),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(Icons.build, size: 16),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Worker Bids & Acceptance',
-                style: SahayakTypography.headlineSm(),
-              ),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          splashRadius: 24,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.maybePop(context);
+          },
         ),
+        title: Text(
+          'Worker Bids & Acceptance',
+          style: SahayakTypography.titleMedium().copyWith(fontWeight: FontWeight.w700),
+        ),
+        centerTitle: false,
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -171,11 +158,13 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                               final showReviews = _expandedReviews[worker.id] ?? false;
                               final showWhy = _expandedWhyWorker[worker.id] ?? false;
 
-                              return Container(
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
                                 margin: const EdgeInsets.only(bottom: 14),
                                 decoration: BoxDecoration(
                                   color: SahayakColors.surfaceContainerLowest,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
                                     color: isSelected ? SahayakColors.primary : SahayakColors.borderSubtle,
                                     width: isSelected ? 2 : 1,
@@ -191,8 +180,11 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                   ],
                                 ),
                                 child: InkWell(
-                                  onTap: () => widget.viewModel.selectOffer(offer),
-                                  borderRadius: BorderRadius.circular(16),
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    widget.viewModel.selectOffer(offer);
+                                  },
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Padding(
                                     padding: const EdgeInsets.all(14),
                                     child: Column(
@@ -303,8 +295,14 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                                         const SizedBox(width: 2),
                                                         Text('${worker.rating}',
                                                             style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w800)),
-                                                        const SizedBox(width: 4),
-                                                        Text('(${worker.completedJobs})', style: SahayakTypography.caption()),
+                                                        const SizedBox(width: 2),
+                                                        Flexible(
+                                                          child: Text(
+                                                            '(${worker.completedJobs})',
+                                                            style: SahayakTypography.caption(),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
                                                       ],
                                                     ),
                                                   ],
@@ -366,17 +364,21 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                           }),
                                           borderRadius: BorderRadius.circular(6),
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4),
+                                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                                             child: Row(
                                               children: [
                                                 const Icon(Icons.shield_outlined, size: 14, color: SahayakColors.secondary),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                  'Why this worker? Verified Co-op Credentials',
-                                                  style: SahayakTypography.caption(color: SahayakColors.secondary)
-                                                      .copyWith(fontWeight: FontWeight.w700),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Why this worker? Verified Co-op Credentials',
+                                                    style: SahayakTypography.caption(color: SahayakColors.secondary)
+                                                        .copyWith(fontWeight: FontWeight.w700),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
                                                 ),
-                                                const Spacer(),
+                                                const SizedBox(width: 4),
                                                 Icon(
                                                   showWhy ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                                                   size: 16,
@@ -386,10 +388,15 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                             ),
                                           ),
                                         ),
-                                        if (showWhy) ...[
-                                          const SizedBox(height: 6),
-                                          _buildWhyWorkerPanel(worker, offer),
-                                        ],
+                                        AnimatedCrossFade(
+                                          firstChild: const SizedBox(width: double.infinity, height: 0),
+                                          secondChild: Padding(
+                                            padding: const EdgeInsets.only(top: 6),
+                                            child: _buildWhyWorkerPanel(worker, offer),
+                                          ),
+                                          crossFadeState: showWhy ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                          duration: const Duration(milliseconds: 200),
+                                        ),
 
                                         // Ratings & Reviews Section with Star-Bar Breakdown
                                         const SizedBox(height: 6),
@@ -399,17 +406,21 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                           }),
                                           borderRadius: BorderRadius.circular(6),
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4),
+                                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                                             child: Row(
                                               children: [
                                                 const Icon(Icons.rate_review_outlined, size: 14, color: SahayakColors.primary),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                  'Customer Reviews & Rating Breakdown (${worker.recentReviews.length})',
-                                                  style: SahayakTypography.caption(color: SahayakColors.primary)
-                                                      .copyWith(fontWeight: FontWeight.w700),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Customer Reviews & Rating Breakdown (${worker.recentReviews.length})',
+                                                    style: SahayakTypography.caption(color: SahayakColors.primary)
+                                                        .copyWith(fontWeight: FontWeight.w700),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
                                                 ),
-                                                const Spacer(),
+                                                const SizedBox(width: 4),
                                                 Icon(
                                                   showReviews ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                                                   size: 16,
@@ -419,10 +430,15 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                                             ),
                                           ),
                                         ),
-                                        if (showReviews) ...[
-                                          const SizedBox(height: 8),
-                                          _buildRatingSummaryAndReviews(worker),
-                                        ],
+                                        AnimatedCrossFade(
+                                          firstChild: const SizedBox(width: double.infinity, height: 0),
+                                          secondChild: Padding(
+                                            padding: const EdgeInsets.only(top: 8),
+                                            child: _buildRatingSummaryAndReviews(worker),
+                                          ),
+                                          crossFadeState: showReviews ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                          duration: const Duration(milliseconds: 200),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -441,9 +457,16 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                 if (selectedOffer != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: SahayakColors.surfaceContainerLowest,
-                      border: Border(top: BorderSide(color: SahayakColors.borderSubtle)),
+                      border: const Border(top: BorderSide(color: SahayakColors.borderSubtle)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
                     ),
                     child: SafeArea(
                       top: false,
@@ -484,19 +507,23 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: _confirmBooking,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    'Confirm Booking with ${selectedOffer.worker.name.split(" ")[0]}',
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _confirmBooking,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      'Confirm Booking with ${selectedOffer.worker.name.split(" ")[0]}',
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.check_circle_outline_rounded, size: 18),
-                              ],
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.check_circle_outline_rounded, size: 18),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -505,9 +532,6 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                   ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -539,7 +563,7 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
                     color: SahayakColors.secondaryFixed.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(c, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+                  child: Text(c, style: SahayakTypography.caption().copyWith(fontSize: 10, fontWeight: FontWeight.w600)),
                 );
               }).toList(),
             ),
@@ -681,7 +705,7 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
       padding: const EdgeInsets.symmetric(vertical: 1.5),
       child: Row(
         children: [
-          Text('$stars ★', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          Text('$stars ★', style: SahayakTypography.caption().copyWith(fontSize: 10, fontWeight: FontWeight.bold)),
           const SizedBox(width: 6),
           Expanded(
             child: ClipRRect(
@@ -704,19 +728,23 @@ class _Step3WorkerMatchingScreenState extends State<Step3WorkerMatchingScreen> {
   Widget _buildSortChip({required String label, required String key, required String activeKey}) {
     final isSelected = key == activeKey;
     return InkWell(
-      onTap: () => widget.viewModel.sortOffers(key),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        widget.viewModel.sortOffers(key);
+      },
       borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected ? SahayakColors.primary : SahayakColors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: SahayakTypography.caption(
             color: isSelected ? Colors.white : SahayakColors.onSurface,
-            fontSize: 11,
+          ).copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),

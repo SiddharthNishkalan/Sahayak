@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../data/models/service.dart';
@@ -40,8 +42,8 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _descController = TextEditingController(text: widget.viewModel.wizardProblemDescription);
     widget.viewModel.setService(widget.service);
+    _descController = TextEditingController(text: widget.viewModel.wizardProblemDescription);
   }
 
   @override
@@ -66,9 +68,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
 
     setState(() => _descriptionError = false);
     widget.viewModel.setProblemDescription(text);
+    HapticFeedback.mediumImpact();
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => Step2TimeLocationScreen(
           viewModel: widget.viewModel,
           service: widget.service,
@@ -78,15 +81,85 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
   }
 
   List<ServiceSubcategory> _getFilteredSubcategories() {
-    final subcategories = widget.viewModel.repository.plumbingSubcategories;
+    final subcategories = widget.viewModel.repository.getSubcategoriesForService(widget.service.id);
     if (_selectedIntentTab == 0) return subcategories;
     if (_selectedIntentTab == 1) {
-      return subcategories.where((s) => s.id.contains('tap') || s.id.contains('leak') || s.id.contains('drain')).toList();
+      final matches = subcategories.where((s) =>
+        s.title.toLowerCase().contains('repair') ||
+        s.title.toLowerCase().contains('fix') ||
+        s.title.toLowerCase().contains('leak') ||
+        s.title.toLowerCase().contains('socket') ||
+        s.title.toLowerCase().contains('mcb') ||
+        s.title.toLowerCase().contains('care') ||
+        s.title.toLowerCase().contains('clean') ||
+        s.title.toLowerCase().contains('mow') ||
+        s.title.toLowerCase().contains('hour') ||
+        s.description.toLowerCase().contains('repair') ||
+        s.description.toLowerCase().contains('fix')
+      ).toList();
+      return matches.isNotEmpty ? matches : subcategories;
     }
     if (_selectedIntentTab == 2) {
-      return subcategories.where((s) => s.id.contains('sanitary') || s.id.contains('tank')).toList();
+      final matches = subcategories.where((s) =>
+        s.title.toLowerCase().contains('install') ||
+        s.title.toLowerCase().contains('setup') ||
+        s.title.toLowerCase().contains('fitting') ||
+        s.title.toLowerCase().contains('assembly') ||
+        s.title.toLowerCase().contains('commute') ||
+        s.title.toLowerCase().contains('assist') ||
+        s.title.toLowerCase().contains('move-in') ||
+        s.description.toLowerCase().contains('install') ||
+        s.description.toLowerCase().contains('setup') ||
+        s.description.toLowerCase().contains('fitting')
+      ).toList();
+      return matches.isNotEmpty ? matches : subcategories;
+    }
+    if (_selectedIntentTab == 3) {
+      final matches = subcategories.where((s) =>
+        s.title.toLowerCase().contains('service') ||
+        s.title.toLowerCase().contains('diagnos') ||
+        s.title.toLowerCase().contains('check') ||
+        s.title.toLowerCase().contains('inspect') ||
+        s.title.toLowerCase().contains('track') ||
+        s.title.toLowerCase().contains('touch-up') ||
+        s.description.toLowerCase().contains('service') ||
+        s.description.toLowerCase().contains('diagnos') ||
+        s.description.toLowerCase().contains('check')
+      ).toList();
+      return matches.isNotEmpty ? matches : subcategories;
     }
     return subcategories;
+  }
+
+  String _getHintTextForService(String serviceId) {
+    switch (serviceId.toLowerCase().trim()) {
+      case 'plumber':
+      case 'plumbing':
+        return 'e.g., kitchen sink mixer tap is dripping continuously, need washer or spindle replaced...';
+      case 'electrician':
+      case 'electrical':
+        return 'e.g., ceiling fan regulator sparking or power tripping on main switchboard socket...';
+      case 'cleaner':
+      case 'cleaning':
+        return 'e.g., deep cleaning required for 2BHK flat, including kitchen tiles & bathroom descaling...';
+      case 'carpenter':
+      case 'carpentry':
+        return 'e.g., wardrobe door hinges loose or bed frame needs realignment & polishing...';
+      case 'caregiver':
+      case 'caregiving':
+        return 'e.g., daily mobility assistance, morning routine support and vital tracking for senior...';
+      case 'driver':
+      case 'driving':
+        return 'e.g., experienced chauffeur needed for outstation trip or daily city office commute...';
+      case 'gardener':
+      case 'gardening':
+        return 'e.g., lawn mowing, shrub pruning, and organic soil fertilizing for balcony garden...';
+      case 'appliance':
+      case 'appliances':
+        return 'e.g., split AC cooling issue, low airflow or washing machine drain pump noise...';
+      default:
+        return 'e.g., describe what needs inspection, fixing or replacement...';
+    }
   }
 
   @override
@@ -101,38 +174,16 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
     return Scaffold(
       backgroundColor: SahayakColors.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: SahayakColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: SahayakColors.borderSubtle),
-              ),
-              padding: const EdgeInsets.all(2),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(Icons.build, size: 16),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${widget.service.title} Booking', style: SahayakTypography.labelLg()),
-                  Text(
-                    'Step 1 of 2 · Problem Specification',
-                    style: SahayakTypography.caption(color: SahayakColors.primary),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          splashRadius: 24,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.maybePop(context);
+          },
         ),
+        title: Text(widget.service.title, style: SahayakTypography.titleMedium().copyWith(fontWeight: FontWeight.w700)),
+        centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -141,23 +192,23 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                 Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.primary, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
                 Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.outlineVariant, shape: BoxShape.circle)),
+                const SizedBox(width: 4),
+                Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.outlineVariant, shape: BoxShape.circle)),
               ],
             ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                         // 1. Offer / Assurance Strip
                         Container(
                           width: double.infinity,
@@ -185,10 +236,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
 
                         // 2. Hero Trade Banner Card
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: SahayakColors.borderSubtle),
                             boxShadow: [
                               BoxShadow(
@@ -201,15 +252,15 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           child: Row(
                             children: [
                               Container(
-                                width: 54,
-                                height: 54,
+                                width: 48,
+                                height: 48,
                                 decoration: BoxDecoration(
                                   color: SahayakColors.primaryFixed,
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Icon(widget.service.icon, color: SahayakColors.primary, size: 30),
+                                child: Icon(widget.service.icon, color: SahayakColors.primary, size: 26),
                               ),
-                              const SizedBox(width: 14),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,11 +280,11 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                             color: SahayakColors.secondaryFixed,
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: const Text('Verified',
-                                              style: TextStyle(
-                                                  color: SahayakColors.onSecondaryFixed,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold)),
+                                          child: Text(
+                                            'Verified',
+                                            style: SahayakTypography.caption(color: SahayakColors.onSecondaryFixed)
+                                                .copyWith(fontSize: 10, fontWeight: FontWeight.w700),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -264,7 +315,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
 
                         if (!isMultiDomain) ...[
                           // 3. Segmented Intent Tab Row
@@ -281,8 +332,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                   child: InkWell(
                                     onTap: () => setState(() => _selectedIntentTab = idx),
                                     borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      curve: Curves.easeInOut,
+                                      padding: const EdgeInsets.symmetric(vertical: 9),
                                       decoration: BoxDecoration(
                                         color: isSel ? SahayakColors.surfaceContainerLowest : Colors.transparent,
                                         borderRadius: BorderRadius.circular(10),
@@ -310,14 +363,14 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
 
                           // 4. Service Subcategories Grid (Single Trade)
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: SahayakColors.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(color: SahayakColors.borderSubtle),
                             ),
                             child: Column(
@@ -357,13 +410,16 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 8,
                                   mainAxisSpacing: 8,
-                                  childAspectRatio: 1.02,
+                                  childAspectRatio: 1.14,
                                   children: filteredSubcategories.map((sub) {
                                     final isSel = sub.id == selectedSubId;
                                     return InkWell(
-                                      onTap: () => setState(() {
-                                        widget.viewModel.setSubcategory(sub.id);
-                                      }),
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        setState(() {
+                                          widget.viewModel.setSubcategory(sub.id);
+                                        });
+                                      },
                                       borderRadius: BorderRadius.circular(14),
                                       child: Container(
                                         padding: const EdgeInsets.all(10),
@@ -385,15 +441,15 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Container(
-                                                  width: 32,
-                                                  height: 32,
+                                                  width: 30,
+                                                  height: 30,
                                                   decoration: BoxDecoration(
                                                     color: isSel ? SahayakColors.primary : SahayakColors.surfaceContainerHighest,
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Icon(
                                                     sub.icon,
-                                                    size: 18,
+                                                    size: 16,
                                                     color: isSel ? Colors.white : SahayakColors.onSurface,
                                                   ),
                                                 ),
@@ -411,6 +467,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                                   sub.title,
                                                   style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
                                                   maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Row(
@@ -421,6 +478,8 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                                         'Worker Quote',
                                                         style: SahayakTypography.caption(color: SahayakColors.primary)
                                                             .copyWith(fontWeight: FontWeight.w700),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                     const SizedBox(width: 4),
@@ -444,7 +503,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: SahayakColors.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(color: SahayakColors.borderSubtle),
                             ),
                             child: Column(
@@ -534,7 +593,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: _descriptionError ? SahayakColors.error : SahayakColors.borderSubtle,
                               width: _descriptionError ? 1.5 : 1.0,
@@ -579,6 +638,8 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                 controller: _descController,
                                 maxLines: 4,
                                 maxLength: 300,
+                                keyboardType: TextInputType.multiline,
+                                textCapitalization: TextCapitalization.sentences,
                                 onChanged: (val) {
                                   setState(() {
                                     if (_descriptionError && val.trim().isNotEmpty) {
@@ -588,7 +649,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                 },
                                 decoration: InputDecoration(
                                   counterText: '',
-                                  hintText: 'e.g., kitchen sink mixer tap is dripping continuously, need washer or spindle replaced...',
+                                  hintText: _getHintTextForService(widget.service.id),
                                   fillColor: SahayakColors.surfaceContainerLow,
                                   errorText: _descriptionError ? 'Description is required so workers bring correct fittings' : null,
                                 ),
@@ -604,7 +665,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: SahayakColors.borderSubtle),
                           ),
                           child: Column(
@@ -652,17 +713,26 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                               child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
                                             ),
                                             Positioned(
-                                              top: 4,
-                                              right: 4,
+                                              top: 2,
+                                              right: 2,
                                               child: InkWell(
-                                                onTap: () => setState(() => widget.viewModel.removeWizardPhoto(idx)),
+                                                onTap: () {
+                                                  HapticFeedback.selectionClick();
+                                                  setState(() => widget.viewModel.removeWizardPhoto(idx));
+                                                },
+                                                borderRadius: BorderRadius.circular(999),
                                                 child: Container(
-                                                  padding: const EdgeInsets.all(2),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.black.withValues(alpha: 0.6),
-                                                    shape: BoxShape.circle,
+                                                  width: 26,
+                                                  height: 26,
+                                                  alignment: Alignment.center,
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(3),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.black.withValues(alpha: 0.65),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Icon(Icons.close, size: 12, color: Colors.white),
                                                   ),
-                                                  child: const Icon(Icons.close, size: 14, color: Colors.white),
                                                 ),
                                               ),
                                             ),
@@ -674,7 +744,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                       Padding(
                                         padding: const EdgeInsets.only(right: 8),
                                         child: InkWell(
-                                          onTap: () => setState(() => widget.viewModel.addWizardPhoto('assets/images/logo.png')),
+                                          onTap: () {
+                                            HapticFeedback.lightImpact();
+                                            setState(() => widget.viewModel.addWizardPhoto('assets/images/logo.png'));
+                                          },
                                           borderRadius: BorderRadius.circular(12),
                                           child: Container(
                                             width: 72,
@@ -684,12 +757,12 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                               borderRadius: BorderRadius.circular(12),
                                               border: Border.all(color: SahayakColors.borderSubtle),
                                             ),
-                                            child: const Column(
+                                            child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.add_a_photo_outlined, size: 20, color: SahayakColors.primary),
-                                                SizedBox(height: 2),
-                                                Text('+ Photo', style: TextStyle(fontSize: 10, color: SahayakColors.primary, fontWeight: FontWeight.w600)),
+                                                const Icon(Icons.add_a_photo_outlined, size: 20, color: SahayakColors.primary),
+                                                const SizedBox(height: 2),
+                                                Text('+ Photo', style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(fontSize: 10, fontWeight: FontWeight.w700)),
                                               ],
                                             ),
                                           ),
@@ -697,7 +770,10 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                       ),
                                     if (videos.length < 2)
                                       InkWell(
-                                        onTap: () => setState(() => widget.viewModel.addWizardVideo('sample_video_clip.mp4')),
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          setState(() => widget.viewModel.addWizardVideo('sample_video_clip.mp4'));
+                                        },
                                         borderRadius: BorderRadius.circular(12),
                                         child: Container(
                                           width: 72,
@@ -707,12 +783,12 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(color: SahayakColors.borderSubtle),
                                           ),
-                                          child: const Column(
+                                          child: Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Icon(Icons.videocam_outlined, size: 22, color: SahayakColors.secondary),
-                                              SizedBox(height: 2),
-                                              Text('+ Video', style: TextStyle(fontSize: 10, color: SahayakColors.secondary, fontWeight: FontWeight.w600)),
+                                              const Icon(Icons.videocam_outlined, size: 22, color: SahayakColors.secondary),
+                                              const SizedBox(height: 2),
+                                              Text('+ Video', style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(fontSize: 10, fontWeight: FontWeight.w700)),
                                             ],
                                           ),
                                         ),
@@ -724,14 +800,14 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
 
                         // 8. Numbered Process Steps (Reference Pattern)
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: SahayakColors.borderSubtle),
                           ),
                           child: Column(
@@ -747,28 +823,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 14),
 
-                        // 9. Checklist of What\'s Included / Excluded (Reference Pattern)
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: SahayakColors.borderSubtle),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('What\'s Included', style: SahayakTypography.labelLg().copyWith(fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 8),
-                              _buildChecklistItem('Certified cooperative member technician', isPositive: true),
-                              _buildChecklistItem('Standard diagnostic inspection and visit included', isPositive: true),
-                              _buildChecklistItem('30-day post-service workmanship warranty', isPositive: true),
-                              _buildChecklistItem('Major replacement parts & brass valves (billed at MRP)', isPositive: false),
-                            ],
-                          ),
-                        ),
 
                         const SizedBox(height: 14),
 
@@ -777,7 +832,7 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: SahayakColors.borderSubtle),
                           ),
                           child: Column(
@@ -804,40 +859,51 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
                 ),
 
                 // Sticky Bottom Bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: const BoxDecoration(
-                    color: SahayakColors.surfaceContainerLowest,
-                    border: Border(top: BorderSide(color: SahayakColors.borderSubtle)),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _goToStep2,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Continue to Time & Location',
-                          ),
+                SafeArea(
+                  top: false,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: SahayakColors.surfaceContainerLowest,
+                      border: const Border(top: BorderSide(color: SahayakColors.borderSubtle)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, -2),
                         ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward_rounded, size: 18),
                       ],
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _goToStep2,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Continue to Time & Location',
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_rounded, size: 18),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -875,32 +941,14 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
     );
   }
 
-  Widget _buildChecklistItem(String text, {required bool isPositive}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            isPositive ? Icons.check_circle_rounded : Icons.cancel_outlined,
-            size: 18,
-            color: isPositive ? SahayakColors.secondary : SahayakColors.outline,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: SahayakTypography.caption(color: isPositive ? SahayakColors.onSurface : SahayakColors.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFaqItem(int index, String question, String answer) {
     final isExpanded = _faqExpanded[index] ?? false;
     return InkWell(
-      onTap: () => setState(() => _faqExpanded[index] = !isExpanded),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _faqExpanded[index] = !isExpanded);
+      },
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -923,13 +971,18 @@ class _Step1ProblemDetailsScreenState extends State<Step1ProblemDetailsScreen> {
                 ),
               ],
             ),
-            if (isExpanded) ...[
-              const SizedBox(height: 6),
-              Text(
-                answer,
-                style: SahayakTypography.caption(),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  answer,
+                  style: SahayakTypography.caption(),
+                ),
               ),
-            ],
+              crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            ),
           ],
         ),
       ),

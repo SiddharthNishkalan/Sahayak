@@ -123,6 +123,13 @@ class Booking {
   final double liveDistanceKm;
   final String? cancellationReason;
   final String? cancelledBy;
+  final String? urgencyLevel;
+
+  // Institutional Multi-Worker Fields
+  final bool isInstitutionBooking;
+  final String? organizationName;
+  final Map<String, int> requiredWorkersPerDomain;
+  final Map<String, List<Worker>> allocatedWorkersPerDomain;
 
   const Booking({
     required this.id,
@@ -153,6 +160,11 @@ class Booking {
     this.liveDistanceKm = 1.4,
     this.cancellationReason,
     this.cancelledBy,
+    this.urgencyLevel,
+    this.isInstitutionBooking = false,
+    this.organizationName,
+    this.requiredWorkersPerDomain = const {},
+    this.allocatedWorkersPerDomain = const {},
   });
 
   /// Check if cancellation is allowed (allowed before 1 hour of scheduled time)
@@ -171,6 +183,44 @@ class Booking {
     final now = DateTime.now();
     final diff = scheduledDateTime.difference(now).inMinutes;
     return diff > 0 ? diff : 0;
+  }
+
+  // Institutional Multi-Worker Aggregate Getters
+  int get totalWorkersRequested {
+    if (!isInstitutionBooking || requiredWorkersPerDomain.isEmpty) {
+      return 1;
+    }
+    return requiredWorkersPerDomain.values.fold(0, (sum, count) => sum + count);
+  }
+
+  int get totalWorkersAllocated {
+    if (!isInstitutionBooking || allocatedWorkersPerDomain.isEmpty) {
+      return (currentStage == BookingStage.matching) ? 0 : 1;
+    }
+    return allocatedWorkersPerDomain.values.fold(0, (sum, list) => sum + list.length);
+  }
+
+  bool get isFullyAllocated => totalWorkersAllocated >= totalWorkersRequested;
+
+  int get remainingPositionsCount {
+    final diff = totalWorkersRequested - totalWorkersAllocated;
+    return diff > 0 ? diff : 0;
+  }
+
+  double get allocationProgressRatio {
+    if (totalWorkersRequested <= 0) return 1.0;
+    return (totalWorkersAllocated / totalWorkersRequested).clamp(0.0, 1.0);
+  }
+
+  List<Worker> get allAllocatedWorkers {
+    if (!isInstitutionBooking) {
+      return [worker];
+    }
+    final List<Worker> list = [];
+    for (final workers in allocatedWorkersPerDomain.values) {
+      list.addAll(workers);
+    }
+    return list.isNotEmpty ? list : [worker];
   }
 
   Booking copyWith({
@@ -203,6 +253,11 @@ class Booking {
     double? liveDistanceKm,
     String? cancellationReason,
     String? cancelledBy,
+    String? urgencyLevel,
+    bool? isInstitutionBooking,
+    String? organizationName,
+    Map<String, int>? requiredWorkersPerDomain,
+    Map<String, List<Worker>>? allocatedWorkersPerDomain,
   }) {
     BookingTab resolvedTab = tab ?? this.tab;
     String? resolvedCancelledBy = cancelledBy ?? this.cancelledBy;
@@ -240,6 +295,11 @@ class Booking {
       liveDistanceKm: liveDistanceKm ?? this.liveDistanceKm,
       cancellationReason: cancellationReason ?? this.cancellationReason,
       cancelledBy: resolvedCancelledBy,
+      urgencyLevel: urgencyLevel ?? this.urgencyLevel,
+      isInstitutionBooking: isInstitutionBooking ?? this.isInstitutionBooking,
+      organizationName: organizationName ?? this.organizationName,
+      requiredWorkersPerDomain: requiredWorkersPerDomain ?? this.requiredWorkersPerDomain,
+      allocatedWorkersPerDomain: allocatedWorkersPerDomain ?? this.allocatedWorkersPerDomain,
     );
   }
 
@@ -291,8 +351,88 @@ class Booking {
       diagnosticFee: 200,
       laborFee: 450,
       materialsFee: 280,
-      totalAmount: 930,
+      platformFee: 20, // 10% of 200 Diagnostic Fee only
+      totalAmount: 950, // 200 + 450 + 280 + 20
       isPaid: true,
     ),
+  );
+
+  static Booking defaultInstitutionUpcoming = Booking(
+    id: 'SK-INST-9021',
+    serviceName: 'Institutional Workforce Request',
+    subcategoryTitle: 'Facility Maintenance Crew',
+    selectedDomains: const ['electrical', 'cleaner'],
+    isMultiDomain: true,
+    problemDescription: 'Pre-event electrical load testing and floor sanitation across Block B wings.',
+    mediaUrls: const [],
+    scheduledSlot: 'Tomorrow · 9:00 AM – 1:00 PM',
+    scheduledDateTime: DateTime.now().add(const Duration(days: 1, hours: 2)),
+    address: const SavedAddress(
+      id: 'site-apex-b',
+      label: 'Office 1 (Main Campus - Block B)',
+      type: 'Office',
+      streetAddress: 'Apex Tech Park, Avinashi Road',
+      landmark: 'Gate 2 Loading Bay',
+      ward: 'Peelamedu Ward 8',
+      pincode: '641014',
+      isDefault: true,
+    ),
+    worker: Worker.arunPrasad,
+    doorstepOtp: '6741',
+    currentStage: BookingStage.confirmed,
+    tab: BookingTab.upcoming,
+    isInstitutionBooking: true,
+    organizationName: 'Apex Technology Park',
+    requiredWorkersPerDomain: const {
+      'electrical': 3,
+      'cleaner': 4,
+    },
+    allocatedWorkersPerDomain: {
+      'electrical': [Worker.arunPrasad, Worker.rameshKumar, Worker.deepakMurugan],
+      'cleaner': [Worker.priyaSharma, Worker.deepakMurugan],
+    },
+    preServiceUpdate: WorkerPreServiceUpdate(
+      status: WorkerPreServiceStatus.onTime,
+      timestamp: DateTime.now(),
+    ),
+  );
+
+  static Booking defaultInstitutionCompleted = Booking(
+    id: 'SK-INST-8842',
+    serviceName: 'Campus Electrical & Carpentry Maintenance',
+    subcategoryTitle: 'Scheduled Bulk Maintenance',
+    selectedDomains: const ['electrical', 'carpentry'],
+    isMultiDomain: true,
+    problemDescription: 'Comprehensive server room earthing and classroom furniture repairs.',
+    mediaUrls: const [],
+    scheduledSlot: '2 days ago · 10:00 AM – 4:00 PM',
+    scheduledDateTime: DateTime.now().subtract(const Duration(days: 2)),
+    address: const SavedAddress(
+      id: 'site-apex-b',
+      label: 'Office 1 (Main Campus - Block B)',
+      type: 'Office',
+      streetAddress: 'Apex Tech Park, Avinashi Road',
+      landmark: 'Gate 2 Loading Bay',
+      ward: 'Peelamedu Ward 8',
+      pincode: '641014',
+      isDefault: true,
+    ),
+    worker: Worker.arunPrasad,
+    doorstepOtp: '8932',
+    currentStage: BookingStage.paid,
+    tab: BookingTab.completed,
+    isInstitutionBooking: true,
+    organizationName: 'Apex Technology Park',
+    requiredWorkersPerDomain: const {
+      'electrical': 2,
+      'carpentry': 2,
+    },
+    allocatedWorkersPerDomain: {
+      'electrical': [Worker.arunPrasad, Worker.rameshKumar],
+      'carpentry': [Worker.deepakMurugan, Worker.priyaSharma],
+    },
+    rating: 5,
+    reviewText: 'All 4 workers reported on time with full toolkits. Co-op allocation was seamless.',
+    invoice: CooperativeInvoice.sampleInstitutionInvoice,
   );
 }

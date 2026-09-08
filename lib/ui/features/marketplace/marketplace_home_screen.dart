@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../data/models/service.dart';
 import '../../../app_view_model.dart';
+import '../../shared_widgets/cooperative_app_bar.dart';
 import '../booking_wizard/step1_problem_details.dart';
+import 'institution_home_view.dart';
 
 class MarketplaceHomeScreen extends StatefulWidget {
   final AppViewModel viewModel;
@@ -28,7 +32,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
   final List<Map<String, dynamic>> _promoBanners = [
     {
       'title': 'Cooperative Fair-Wage Guarantee',
-      'subtitle': 'Zero surge pricing. 100% of standard labour fees go directly to local verified workers.',
+      'subtitle': 'Zero surge pricing. 100% of standard labour fees go directly to verified workers.',
       'badge': 'Cooperative Charter',
       'icon': Icons.verified_user_rounded,
       'color': SahayakColors.primary,
@@ -36,7 +40,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     },
     {
       'title': 'Monsoon Drainage & Pipe Check',
-      'subtitle': 'Pre-monsoon roof inspection, concealed pipe and drain clearance. Fair quotes by verified pros.',
+      'subtitle': 'Pre-monsoon roof inspection and concealed drain clearance by verified pros.',
       'badge': 'Seasonal Shield',
       'icon': Icons.water_damage_rounded,
       'color': SahayakColors.secondary,
@@ -44,7 +48,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     },
     {
       'title': 'Emergency SOS Doorstep Dispatch',
-      'subtitle': 'Burst pipe or sudden power outage? Nearest cooperative pro dispatched under 20 mins.',
+      'subtitle': 'Burst pipe or power outage? Nearest cooperative pro dispatched under 20 mins.',
       'badge': '24/7 Rapid SOS',
       'icon': Icons.bolt_rounded,
       'color': SahayakColors.error,
@@ -89,10 +93,12 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
   }
 
   void _openBookingWizard(ServiceItem service, bool isEmergency) {
+    HapticFeedback.mediumImpact();
     widget.viewModel.setTimingMode(isEmergency: isEmergency);
+    widget.viewModel.setService(service);
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => Step1ProblemDetailsScreen(
           viewModel: widget.viewModel,
           service: service,
@@ -105,9 +111,11 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
+      useSafeArea: true,
       backgroundColor: SahayakColors.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final services = widget.viewModel.repository.services;
@@ -128,9 +136,10 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
             return SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
                       child: Container(
@@ -613,35 +622,56 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                   ],
                 ),
               ),
-            );
-          },
-        );
-      },
+            ),
+          );
+        },
+      );
+    },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = widget.viewModel;
+
+    // Institution accounts receive the dedicated institution home view with no emergency shortcut
+    if (viewModel.currentUser?.isInstitution == true) {
+      return Column(
+        children: [
+          CooperativeAppBar(viewModel: viewModel),
+          Expanded(
+            child: InstitutionHomeView(viewModel: viewModel),
+          ),
+        ],
+      );
+    }
+
     final userName = viewModel.currentUser?.name.split(' ').first ?? 'Citizen';
     final filteredServices = viewModel.filteredServices;
     final isSearching = _searchController.text.trim().isNotEmpty;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Live Location & Greeting Bar
+    return Column(
+      children: [
+        CooperativeAppBar(viewModel: viewModel),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              HapticFeedback.lightImpact();
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            color: SahayakColors.primary,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: SahayakColors.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: SahayakColors.borderSubtle),
                 ),
                 child: Row(
@@ -941,7 +971,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 20),
 
                 // 6. Horizontally-Scrolling "Popular Services" Row
                 Row(
@@ -992,26 +1022,26 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                 const SizedBox(height: 8),
                 _buildHorizontalServicesRow(context, true),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // 8. Trust & Guarantee Strip
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: SahayakColors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: SahayakColors.borderSubtle),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           color: SahayakColors.secondaryFixed,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.verified_user_rounded, color: SahayakColors.secondary, size: 22),
+                        child: const Icon(Icons.verified_user_rounded, color: SahayakColors.secondary, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -1019,7 +1049,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Sahayak Cooperative Trust Charter',
+                              'Work Solute Cooperative Trust Charter',
                               style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
                             ),
                             Text(
@@ -1039,8 +1069,10 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  ],
+);
+}
 
   // 8-Category Icon Grid (2 rows x 4 columns)
   Widget _buildCategoryIconGrid(BuildContext context) {
@@ -1052,9 +1084,9 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
       itemCount: services.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.78,
         crossAxisSpacing: 8,
-        mainAxisSpacing: 10,
+        mainAxisSpacing: 8,
       ),
       itemBuilder: (context, idx) {
         final service = services[idx];
@@ -1065,11 +1097,11 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: SahayakColors.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: SahayakColors.borderSubtle),
                   boxShadow: [
                     BoxShadow(
@@ -1080,7 +1112,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                   ],
                 ),
                 child: Center(
-                  child: Icon(service.icon, color: SahayakColors.primary, size: 28),
+                  child: Icon(service.icon, color: SahayakColors.primary, size: 24),
                 ),
               ),
               const SizedBox(height: 6),
@@ -1102,7 +1134,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 138,
+          height: 148,
           child: PageView.builder(
             controller: _bannerPageController,
             itemCount: _promoBanners.length,
@@ -1116,10 +1148,10 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
 
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2),
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: bg,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: color.withValues(alpha: 0.2)),
                 ),
                 child: Row(
@@ -1140,28 +1172,32 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                               style: SahayakTypography.caption(color: color).copyWith(fontWeight: FontWeight.w800, fontSize: 10),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 5),
                           Text(
                             banner['title'] as String,
                             style: SahayakTypography.labelMd().copyWith(fontWeight: FontWeight.w800),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Text(
                             banner['subtitle'] as String,
                             style: SahayakTypography.caption(),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 10),
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(banner['icon'] as IconData, color: color, size: 26),
+                      child: Icon(banner['icon'] as IconData, color: color, size: 24),
                     ),
                   ],
                 ),
@@ -1203,15 +1239,15 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
   }) {
     return Material(
       color: bgColor,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       elevation: isSelected ? 2 : 0,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? accentColor : SahayakColors.borderSubtle,
               width: isSelected ? 2 : 1,
@@ -1221,15 +1257,15 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: accentColor, size: 22),
+                child: Icon(icon, color: accentColor, size: 20),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 title,
                 style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w800),
@@ -1251,7 +1287,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
     final services = widget.viewModel.repository.services;
 
     return SizedBox(
-      height: 176,
+      height: 192,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: services.length,
@@ -1259,11 +1295,11 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
         itemBuilder: (context, idx) {
           final service = services[idx];
           return Container(
-            width: 160,
-            padding: const EdgeInsets.all(12),
+            width: 154,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: SahayakColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: SahayakColors.borderSubtle),
             ),
             child: Column(
@@ -1301,6 +1337,7 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       service.title,
                       style: SahayakTypography.labelSm().copyWith(fontWeight: FontWeight.w700),
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       '~45 mins',
@@ -1325,14 +1362,15 @@ class _MarketplaceHomeScreenState extends State<MarketplaceHomeScreen> {
                       onTap: () => _openBookingWizard(service, isEmergency),
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        constraints: const BoxConstraints(minHeight: 30),
                         decoration: BoxDecoration(
                           color: isEmergency ? SahayakColors.error : SahayakColors.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           isEmergency ? 'SOS' : 'Book',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          style: SahayakTypography.caption(color: Colors.white).copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),

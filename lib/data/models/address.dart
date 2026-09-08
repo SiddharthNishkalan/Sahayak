@@ -87,4 +87,17 @@ class SavedAddress {
     latitude: 11.0183,
     longitude: 76.9654,
   );
+
+  static const SavedAddress defaultInstitutionFacility = SavedAddress(
+    id: 'site-apex-main',
+    label: 'Office 1 (Apex Technology Park)',
+    type: 'Office',
+    streetAddress: 'Block B Main Building, Peelamedu',
+    landmark: 'Near Avinashi Road Tech Hub',
+    ward: 'Ward 8',
+    pincode: '641014',
+    isDefault: true,
+    latitude: 11.0280,
+    longitude: 77.0040,
+  );
 }

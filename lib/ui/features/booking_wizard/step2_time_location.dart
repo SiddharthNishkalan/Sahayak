@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../data/models/service.dart';
 import '../../../app_view_model.dart';
 import '../../shared_widgets/custom_vector_map.dart';
+import '../profile/edit_address_bottom_sheet.dart';
 import 'step3_worker_matching.dart';
 
 class Step2TimeLocationScreen extends StatefulWidget {
@@ -39,6 +42,26 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
     {'id': 'HEATER_FAILURE', 'label': 'Water Heater / Motor Spark', 'icon': '🔥'},
   ];
 
+
+  final List<Map<String, dynamic>> _emergencyUrgencyOptions = [
+    {
+      'id': 'critical',
+      'title': 'Critical Risk SOS',
+      'sub': 'Flooding, sparks, active hazard',
+      'badge': '< 15 Min SOS',
+      'icon': Icons.warning_amber_rounded,
+      'color': SahayakColors.error,
+    },
+    {
+      'id': 'high',
+      'title': 'High Urgency',
+      'sub': 'Severe blockage, full power trip',
+      'badge': '< 30 Min Rapid',
+      'icon': Icons.timer_rounded,
+      'color': const Color(0xFFE65100),
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -56,10 +79,11 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
   }
 
   void _goToStep3() {
+    HapticFeedback.mediumImpact();
     widget.viewModel.broadcastJobRequest();
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => Step3WorkerMatchingScreen(
           viewModel: widget.viewModel,
           service: widget.service,
@@ -72,45 +96,25 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
   Widget build(BuildContext context) {
     final isEmergency = widget.viewModel.wizardIsEmergency;
     final selectedEmergencyTag = widget.viewModel.wizardEmergencyTag ?? _emergencyTags.first['id'];
+    final selectedEmergencyUrgency = widget.viewModel.wizardEmergencySeverity;
     final selectedDate = widget.viewModel.wizardSelectedDateIndex;
     final selectedSlot = widget.viewModel.wizardSelectedTimeSlot;
     final selectedAddr = widget.viewModel.wizardSelectedAddress;
+    final isInstitution = widget.viewModel.isInstitution;
 
     return Scaffold(
       backgroundColor: SahayakColors.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: SahayakColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: SahayakColors.borderSubtle),
-              ),
-              padding: const EdgeInsets.all(2),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(Icons.build, size: 16),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Booking Wizard · Step 2', style: SahayakTypography.labelLg()),
-                  Text(
-                    'Sahayak Co-op • Schedule & Society Dispatch',
-                    style: SahayakTypography.caption(color: SahayakColors.primary),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          splashRadius: 24,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.maybePop(context);
+          },
         ),
+        title: Text('Schedule & Location', style: SahayakTypography.titleMedium().copyWith(fontWeight: FontWeight.w700)),
+        centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -119,29 +123,29 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                 Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.primary, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
                 Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.primary, shape: BoxShape.circle)),
+                const SizedBox(width: 4),
+                Container(width: 8, height: 8, decoration: const BoxDecoration(color: SahayakColors.outlineVariant, shape: BoxShape.circle)),
               ],
             ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                         // Progress Tracker Banner
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,9 +164,12 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                             shape: BoxShape.circle,
                                           ),
                                           alignment: Alignment.center,
-                                          child: const Text(
+                                          child: Text(
                                             '2',
-                                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                            style: SahayakTypography.caption(color: Colors.white).copyWith(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -217,94 +224,120 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                           ),
                         ),
 
-                        // Section 1: Timing Mode: Scheduled vs Emergency
-                        const SizedBox(height: 16),
-                        Text('Service Urgency & Schedule', style: SahayakTypography.headlineSm()),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            // Scheduled Option
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => widget.viewModel.setTimingMode(isEmergency: false),
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: !isEmergency ? SahayakColors.primaryFixed.withValues(alpha: 0.25) : SahayakColors.surfaceContainerLowest,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: !isEmergency ? SahayakColors.primary : SahayakColors.borderSubtle,
-                                      width: !isEmergency ? 2 : 1,
-                                    ),
+                        // Emergency SOS Severity & Urgency (Only in Emergency Mode)
+                        if (isEmergency) ...[
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.bolt_rounded, color: SahayakColors.error, size: 22),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Emergency SOS Urgency',
+                                    style: SahayakTypography.headlineSm().copyWith(color: SahayakColors.error),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: SahayakColors.error,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '< 20 MIN DISPATCH',
+                                  style: SahayakTypography.caption(color: Colors.white)
+                                      .copyWith(fontSize: 10, fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Specify severity for rapid doorstep response broadcasted to nearest society workers:',
+                            style: SahayakTypography.caption(),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: _emergencyUrgencyOptions.map((opt) {
+                              final isSel = selectedEmergencyUrgency == opt['id'];
+                              final optColor = opt['color'] as Color;
+                              return Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  child: InkWell(
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      widget.viewModel.setEmergencySeverity(opt['id'] as String);
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      curve: Curves.easeInOut,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: isSel ? optColor.withValues(alpha: 0.1) : SahayakColors.surfaceContainerLowest,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSel ? optColor : SahayakColors.borderSubtle,
+                                          width: isSel ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Icon(Icons.calendar_month_rounded, color: SahayakColors.primary, size: 24),
-                                          Icon(
-                                            !isEmergency ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-                                            size: 18,
-                                            color: !isEmergency ? SahayakColors.primary : SahayakColors.outline,
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Icon(opt['icon'] as IconData, color: optColor, size: 22),
+                                              Icon(
+                                                isSel ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+                                                size: 18,
+                                                color: isSel ? optColor : SahayakColors.outline,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            opt['title'] as String,
+                                            style: SahayakTypography.labelMd().copyWith(
+                                              color: isSel ? optColor : SahayakColors.onSurface,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            opt['sub'] as String,
+                                            style: SahayakTypography.caption(),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: isSel ? optColor : SahayakColors.surfaceContainerHigh,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              opt['badge'] as String,
+                                              style: SahayakTypography.caption(
+                                                color: isSel ? Colors.white : SahayakColors.onSurfaceVariant,
+                                              ).copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text('Scheduled Visit', style: SahayakTypography.labelMd()),
-                                      const SizedBox(height: 2),
-                                      Text('Book in advance', style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Emergency Option
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => widget.viewModel.setTimingMode(
-                                  isEmergency: true,
-                                  emergencyTag: selectedEmergencyTag,
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: isEmergency ? SahayakColors.errorContainer.withValues(alpha: 0.35) : SahayakColors.surfaceContainerLowest,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: isEmergency ? SahayakColors.error : SahayakColors.borderSubtle,
-                                      width: isEmergency ? 2 : 1,
                                     ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Icon(Icons.bolt_rounded, color: SahayakColors.error, size: 24),
-                                          Icon(
-                                            isEmergency ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-                                            size: 18,
-                                            color: isEmergency ? SahayakColors.error : SahayakColors.outline,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text('⚡ Emergency', style: SahayakTypography.labelMd().copyWith(color: isEmergency ? SahayakColors.error : SahayakColors.onSurface)),
-                                      const SizedBox(height: 2),
-                                      Text('< 20 min rapid dispatch', style: SahayakTypography.caption(color: SahayakColors.error).copyWith(fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
 
                         // Emergency Tag & Geolocation Section (if Emergency)
                         if (isEmergency) ...[
@@ -313,7 +346,7 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: SahayakColors.errorContainer.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(color: SahayakColors.error.withValues(alpha: 0.4)),
                             ),
                             child: Column(
@@ -336,20 +369,22 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                   spacing: 8,
                                   runSpacing: 8,
                                   children: _emergencyTags.map((tag) {
-                                    final isTagSel = (widget.viewModel.wizardEmergencyTag ?? _emergencyTags.first['id']) == tag['id'];
+                                    final isTagSel = selectedEmergencyTag == tag['id'];
                                     return ChoiceChip(
                                       selected: isTagSel,
                                       avatar: Text(tag['icon']!),
                                       label: Text(tag['label']!),
                                       selectedColor: SahayakColors.error,
                                       backgroundColor: SahayakColors.surfaceContainerLowest,
-                                      labelStyle: TextStyle(
+                                      labelStyle: SahayakTypography.caption(
                                         color: isTagSel ? Colors.white : SahayakColors.onSurface,
+                                      ).copyWith(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 12,
                                       ),
                                       onSelected: (val) {
                                         if (val) {
+                                          HapticFeedback.selectionClick();
                                           widget.viewModel.setTimingMode(
                                             isEmergency: true,
                                             emergencyTag: tag['id'],
@@ -393,7 +428,11 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                           color: SahayakColors.error,
                                           borderRadius: BorderRadius.circular(4),
                                         ),
-                                        child: const Text('PRIORITY', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        child: Text(
+                                          'PRIORITY',
+                                          style: SahayakTypography.caption(color: Colors.white)
+                                              .copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -411,6 +450,7 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                           SizedBox(
                             height: 62,
                             child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemCount: _dateOptions.length,
                               itemBuilder: (context, index) {
@@ -418,9 +458,14 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8),
                                   child: InkWell(
-                                    onTap: () => widget.viewModel.setDateIndex(index),
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      widget.viewModel.setDateIndex(index);
+                                    },
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Container(
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      curve: Curves.easeInOut,
                                       width: 84,
                                       decoration: BoxDecoration(
                                         color: isSel ? SahayakColors.primaryContainer : SahayakColors.surfaceContainerLowest,
@@ -455,7 +500,7 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 8,
                               mainAxisSpacing: 8,
-                              childAspectRatio: 2.0,
+                              childAspectRatio: 2.3,
                             ),
                             itemBuilder: (context, index) {
                               final item = _slotOptions[index];
@@ -465,10 +510,17 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                               final isSel = selectedSlot == slotText;
 
                               return InkWell(
-                                onTap: disabled ? null : () => widget.viewModel.setTimeSlot(slotText),
+                                onTap: disabled
+                                    ? null
+                                    : () {
+                                        HapticFeedback.selectionClick();
+                                        widget.viewModel.setTimeSlot(slotText);
+                                      },
                                 borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  curve: Curves.easeInOut,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: disabled
                                         ? SahayakColors.surfaceContainer.withValues(alpha: 0.5)
@@ -492,6 +544,8 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                           decoration: disabled ? TextDecoration.lineThrough : null,
                                           fontWeight: isSel ? FontWeight.w700 : FontWeight.w600,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         subText,
@@ -502,6 +556,8 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                                   ? SahayakColors.secondary
                                                   : SahayakColors.onSurfaceVariant,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
@@ -560,7 +616,7 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: SahayakColors.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(color: SahayakColors.borderSubtle),
                           ),
                           child: Column(
@@ -590,54 +646,151 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                                       ],
                                     ),
                                   ),
-                                  IconButton(
-                                    tooltip: 'Detect Device GPS',
-                                    icon: const Icon(Icons.my_location_rounded, color: SahayakColors.primary, size: 20),
-                                    onPressed: () => widget.viewModel.detectCurrentDeviceLocation(),
-                                  ),
+                                  if (!isInstitution) ...[
+                                    IconButton(
+                                      tooltip: 'Edit Current Address',
+                                      splashRadius: 22,
+                                      icon: const Icon(Icons.edit_location_alt_rounded, color: SahayakColors.primary, size: 20),
+                                      onPressed: () {
+                                        EditAddressBottomSheet.show(
+                                          context,
+                                          address: selectedAddr,
+                                          onSave: (updated) {
+                                            widget.viewModel.saveAddress(updated);
+                                            widget.viewModel.setWizardAddress(updated);
+                                          },
+                                          onDelete: (id) => widget.viewModel.deleteAddress(id),
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Detect Device GPS',
+                                      splashRadius: 22,
+                                      icon: const Icon(Icons.my_location_rounded, color: SahayakColors.primary, size: 20),
+                                      onPressed: () => widget.viewModel.detectCurrentDeviceLocation(),
+                                    ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              // Saved addresses pills using Wrap to prevent overflow
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 6,
-                                children: widget.viewModel.repository.addresses.map((addr) {
-                                  final isSel = addr.id == selectedAddr.id;
-                                  return InkWell(
-                                    onTap: () => widget.viewModel.setWizardAddress(addr),
-                                    borderRadius: BorderRadius.circular(999),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: isSel ? SahayakColors.primary : SahayakColors.surfaceContainerLow,
+                              // Saved addresses pills with + Add Address option (Only for standard household users)
+                              if (!isInstitution) ...[
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    ...widget.viewModel.repository.addresses.map((addr) {
+                                      final isSel = addr.id == selectedAddr.id;
+                                      return InkWell(
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          widget.viewModel.setWizardAddress(addr);
+                                        },
                                         borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            addr.type == 'Home' ? Icons.home_rounded : Icons.apartment_rounded,
-                                            size: 14,
-                                            color: isSel ? SahayakColors.onPrimary : SahayakColors.onSurface,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: isSel ? SahayakColors.primary : SahayakColors.surfaceContainerLow,
+                                            borderRadius: BorderRadius.circular(999),
                                           ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${addr.type} · ${addr.society}',
-                                            style: SahayakTypography.caption(
-                                              color: isSel ? SahayakColors.onPrimary : SahayakColors.onSurface,
-                                            ).copyWith(fontWeight: FontWeight.w600),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                addr.type == 'Home' ? Icons.home_rounded : Icons.apartment_rounded,
+                                                size: 14,
+                                                color: isSel ? SahayakColors.onPrimary : SahayakColors.onSurface,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${addr.type} · ${addr.society}',
+                                                style: SahayakTypography.caption(
+                                                  color: isSel ? SahayakColors.onPrimary : SahayakColors.onSurface,
+                                                ).copyWith(fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
+                                      );
+                                    }),
+                                    // + Add Address Button
+                                    InkWell(
+                                      key: const Key('add_saved_address_chip'),
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        EditAddressBottomSheet.show(
+                                          context,
+                                          onSave: (newAddr) {
+                                            widget.viewModel.saveAddress(newAddr);
+                                            widget.viewModel.setWizardAddress(newAddr);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Address "${newAddr.label}" added & selected!'),
+                                                backgroundColor: SahayakColors.primary,
+                                                behavior: SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                duration: const Duration(seconds: 2),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: SahayakColors.surfaceContainerHigh,
+                                          borderRadius: BorderRadius.circular(999),
+                                          border: Border.all(
+                                            color: SahayakColors.primary.withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.add_rounded, size: 14, color: SahayakColors.primary),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '+ Add Address',
+                                              style: SahayakTypography.caption(color: SahayakColors.primary).copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
+                                  ],
+                                ),
+                              ] else ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: SahayakColors.secondaryFixed.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: SahayakColors.secondary.withValues(alpha: 0.4)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.verified_rounded, size: 14, color: SahayakColors.secondary),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Single Registered Institution Campus · Facility Site',
+                                        style: SahayakTypography.caption(color: SahayakColors.secondary).copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 12),
                               // Door landmark input
                               TextField(
                                 controller: _notesController,
+                                textCapitalization: TextCapitalization.sentences,
                                 decoration: const InputDecoration(
                                   prefixIcon: Icon(Icons.door_front_door_outlined, color: SahayakColors.outline),
                                   hintText: 'House/Apartment & Landmark instructions',
@@ -683,38 +836,49 @@ class _Step2TimeLocationScreenState extends State<Step2TimeLocationScreen> {
                 ),
 
                 // Sticky Bottom CTA
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: const BoxDecoration(
-                    color: SahayakColors.surfaceContainerLowest,
-                    border: Border(top: BorderSide(color: SahayakColors.borderSubtle)),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _goToStep3,
-                    style: isEmergency
-                        ? ElevatedButton.styleFrom(backgroundColor: SahayakColors.error)
-                        : null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            isEmergency
-                                ? '⚡ Broadcast Emergency Dispatch'
-                                : 'Broadcast to Nearest Society Workers',
-                          ),
+                SafeArea(
+                  top: false,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: SahayakColors.surfaceContainerLowest,
+                      border: const Border(top: BorderSide(color: SahayakColors.borderSubtle)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, -2),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 18),
                       ],
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _goToStep3,
+                        style: isEmergency
+                            ? ElevatedButton.styleFrom(backgroundColor: SahayakColors.error)
+                            : null,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                isEmergency
+                                    ? '⚡ Broadcast Emergency Dispatch'
+                                    : 'Broadcast to Nearest Society Workers',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, size: 18),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

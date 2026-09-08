@@ -3,6 +3,8 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/typography.dart';
 import '../../app_view_model.dart';
 
+import 'package:flutter/services.dart';
+
 class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final AppViewModel viewModel;
   final bool showBackButton;
@@ -18,13 +20,16 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(56);
 
   void _showWardPicker(BuildContext context) {
+    HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
       backgroundColor: SahayakColors.surfaceContainerLowest,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -43,27 +48,17 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
               maxHeight: MediaQuery.of(context).size.height * 0.75,
             ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          viewModel.strings.get('service_location_title'),
-                          style: SahayakTypography.headlineSm(),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
+                  Text(
+                    viewModel.strings.get('service_location_title'),
+                    style: SahayakTypography.headlineSm(),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     'Cooperative network guarantees rapid emergency response from the nearest local hub.',
                     style: SahayakTypography.bodySm(),
@@ -72,16 +67,17 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     tileColor: SahayakColors.primaryFixed.withValues(alpha: 0.2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     leading: const Icon(Icons.my_location_rounded, color: SahayakColors.primary),
                     title: Text(viewModel.strings.get('detect_live_gps'), style: SahayakTypography.labelMd(color: SahayakColors.primary)),
                     subtitle: Text(viewModel.strings.get('detect_live_gps_sub')),
                     onTap: () {
+                      HapticFeedback.selectionClick();
                       Navigator.pop(ctx);
                       viewModel.detectCurrentDeviceLocation();
                     },
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   ...wards.map((ward) {
                     final isSelected = viewModel.currentWard == ward;
                     return ListTile(
@@ -100,11 +96,13 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                           ? const Icon(Icons.check_circle, color: SahayakColors.primary)
                           : null,
                       onTap: () {
+                        HapticFeedback.selectionClick();
                         viewModel.updateWard(ward);
                         Navigator.pop(ctx);
                       },
                     );
                   }),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -116,41 +114,58 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Drill-down compact bar: just back chevron + title
+    if (showBackButton) {
+      return AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.maybePop(context);
+          },
+        ),
+        title: customTitle != null
+            ? Text(customTitle!, style: SahayakTypography.labelLg())
+            : null,
+        centerTitle: false,
+        toolbarHeight: 56,
+      );
+    }
+
+    // Home brand bar with ward picker and profile avatar
     return Container(
-      decoration: BoxDecoration(
-        color: SahayakColors.surface.withValues(alpha: 0.9),
-        border: const Border(
-          bottom: BorderSide(color: SahayakColors.borderSubtle, width: 1),
+      decoration: const BoxDecoration(
+        color: SahayakColors.surface,
+        border: Border(
+          bottom: BorderSide(color: SahayakColors.borderSubtle, width: 0.5),
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Container(
-          height: 64,
+          height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              if (showBackButton)
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: SahayakColors.onSurface),
-                  onPressed: () => Navigator.maybePop(context),
-                ),
               // Brand Emblem
               Container(
-                width: 38,
-                height: 38,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: SahayakColors.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: SahayakColors.borderSubtle),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: SahayakColors.borderSubtle, width: 0.5),
                 ),
                 padding: const EdgeInsets.all(4),
                 child: Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/logo_mark.png',
                   fit: BoxFit.contain,
                   errorBuilder: (_, _, _) => const Icon(
                     Icons.home_work_rounded,
                     color: SahayakColors.primary,
+                    size: 20,
                   ),
                 ),
               ),
@@ -165,7 +180,7 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                         children: [
                           Text(
                             customTitle!,
-                            style: SahayakTypography.headlineSm(),
+                            style: SahayakTypography.labelLg(),
                           ),
                           if (customSubtitle != null)
                             Text(
@@ -180,7 +195,7 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                         children: [
                           Text(
                             viewModel.strings.get('coop_union'),
-                            style: SahayakTypography.labelSm(color: SahayakColors.onSurfaceVariant),
+                            style: SahayakTypography.caption(color: SahayakColors.onSurfaceVariant),
                           ),
                           InkWell(
                             onTap: () => _showWardPicker(context),
@@ -207,11 +222,14 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
               // Profile Avatar Trigger
               InkWell(
-                onTap: () => viewModel.switchTab(ShellTab.profile),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  viewModel.switchTab(ShellTab.profile);
+                },
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: SahayakColors.primary.withValues(alpha: 0.3), width: 1.5),
@@ -222,7 +240,7 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
                       color: SahayakColors.primaryContainer,
-                      child: const Icon(Icons.person, color: SahayakColors.onPrimary, size: 20),
+                      child: const Icon(Icons.person, color: SahayakColors.onPrimary, size: 18),
                     ),
                   ),
                 ),
@@ -234,3 +252,4 @@ class CooperativeAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+

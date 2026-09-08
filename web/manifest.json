@@ -1,11 +1,11 @@
 {
-    "name": "sahayak_home_services",
-    "short_name": "sahayak_home_services",
+    "name": "Work Solute",
+    "short_name": "Work Solute",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Work Solute - Cooperative Home Services Platform",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

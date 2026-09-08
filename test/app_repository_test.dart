@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sahayak_home_services/data/repositories/app_repository.dart';
-import 'package:sahayak_home_services/data/models/language.dart';
-import 'package:sahayak_home_services/data/models/address.dart';
-import 'package:sahayak_home_services/data/models/worker.dart';
-import 'package:sahayak_home_services/data/models/booking.dart';
+import 'package:work_solute/data/repositories/app_repository.dart';
+import 'package:work_solute/data/models/language.dart';
+import 'package:work_solute/data/models/address.dart';
+import 'package:work_solute/data/models/worker.dart';
+import 'package:work_solute/data/models/booking.dart';
 
 void main() {
   group('AppRepository tests', () {

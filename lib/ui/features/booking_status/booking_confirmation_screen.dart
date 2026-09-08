@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
@@ -37,6 +38,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   void _copyBookingId() {
+    HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: _currentBooking.id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -50,7 +52,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         ),
         backgroundColor: CooperativeColors.inverseSurface,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -80,32 +82,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     );
   }
 
-  void _simulateStatus(WorkerPreServiceStatus status, {int delayMinutes = 0, String? reason}) {
-    if (widget.viewModel != null) {
-      final updated = widget.viewModel!.simulate1HourPreServiceUpdate(
-        bookingId: _currentBooking.id,
-        status: status,
-        delayMinutes: delayMinutes,
-        reason: reason,
-      );
-      if (updated != null) {
-        setState(() {
-          _currentBooking = updated;
-        });
-      }
-    } else {
-      setState(() {
-        _currentBooking = _currentBooking.copyWith(
-          preServiceUpdate: WorkerPreServiceUpdate(
-            status: status,
-            delayMinutes: delayMinutes,
-            reason: reason,
-            sentAt: DateTime.now(),
-          ),
-        );
-      });
-    }
-  }
+
 
   void _handleCustomerCancellation() {
     final canCancelFree = _currentBooking.canCancelBefore1Hour;
@@ -113,7 +90,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: CooperativeColors.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Row(
           children: [
             Icon(
@@ -125,7 +102,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             Expanded(
               child: Text(
                 canCancelFree ? 'Cancel Service Booking?' : '1-Hour Policy Warning',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: SahayakTypography.titleMedium().copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -178,60 +155,36 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     return Scaffold(
       backgroundColor: CooperativeColors.surface,
       appBar: AppBar(
-        backgroundColor: CooperativeColors.surface.withValues(alpha: 0.95),
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.04),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: CooperativeColors.onSurface),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          splashRadius: 24,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.of(context).pop();
+          },
         ),
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              height: 28,
-              width: 28,
-              errorBuilder: (_, _, _) => const Icon(Icons.handshake, color: CooperativeColors.primary, size: 24),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'Service Confirmation',
-                style: CooperativeTypography.headlineSm.copyWith(
-                  color: CooperativeColors.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundImage: const AssetImage('assets/images/user_avatar.png'),
-              backgroundColor: CooperativeColors.surfaceContainerHigh,
-            ),
+        title: Text(
+          'Service Confirmation',
+          style: SahayakTypography.titleMedium().copyWith(
+            color: CooperativeColors.onSurface,
+            fontWeight: FontWeight.w700,
           ),
-        ],
+        ),
+        centerTitle: false,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
                   // 1. Success Celebration Banner
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.secondaryContainer.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: CooperativeColors.secondary.withValues(alpha: 0.2)),
                     ),
                     child: Row(
@@ -299,11 +252,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   const SizedBox(width: 4),
                                   InkWell(
                                     onTap: _copyBookingId,
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(8),
                                     child: const Padding(
-                                      padding: EdgeInsets.all(2),
+                                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                                       child: Icon(
-                                        Icons.copy,
+                                        Icons.copy_rounded,
                                         size: 16,
                                         color: CooperativeColors.primary,
                                       ),
@@ -325,7 +278,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -467,7 +420,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.primaryFixed,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: CooperativeColors.primary.withValues(alpha: 0.08),
@@ -534,7 +487,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                               const TextSpan(text: 'Share this 4-digit OTP with '),
                               TextSpan(
                                 text: b.worker.name,
-                                style: const TextStyle(fontWeight: FontWeight.w700, color: CooperativeColors.onSurface),
+                                style: CooperativeTypography.bodySm.copyWith(fontWeight: FontWeight.w700, color: CooperativeColors.onSurface),
                               ),
                               const TextSpan(text: ' only when they arrive at your doorstep to begin work.'),
                             ],
@@ -551,7 +504,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -571,11 +524,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   height: 56,
                                   decoration: BoxDecoration(
                                     color: CooperativeColors.surfaceContainer,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     child: Image.asset(
                                       'assets/images/user_avatar.png',
                                       fit: BoxFit.cover,
@@ -665,7 +618,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           children: [
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: _makePhoneCall,
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  _makePhoneCall();
+                                },
                                 icon: const Icon(Icons.call, size: 18, color: CooperativeColors.primary),
                                 label: Text('Call ${b.worker.name.split(' ').first}',
                                     style: CooperativeTypography.labelMd.copyWith(color: CooperativeColors.onSurface)),
@@ -674,13 +630,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   side: BorderSide.none,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
+                                  minimumSize: const Size.fromHeight(46),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: _openChat,
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  _openChat();
+                                },
                                 icon: const Icon(Icons.chat, size: 18, color: CooperativeColors.primary),
                                 label: Text('In-App Chat',
                                     style: CooperativeTypography.labelMd.copyWith(color: CooperativeColors.onSurface)),
@@ -689,6 +649,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   side: BorderSide.none,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
+                                  minimumSize: const Size.fromHeight(46),
                                 ),
                               ),
                             ),
@@ -705,7 +666,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -732,7 +693,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   Container(
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -745,7 +706,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         initiallyExpanded: _isFaqExpanded,
-                        onExpansionChanged: (val) => setState(() => _isFaqExpanded = val),
+                        onExpansionChanged: (val) {
+                          HapticFeedback.selectionClick();
+                          setState(() => _isFaqExpanded = val);
+                        },
                         leading: const Icon(Icons.help_outline, color: CooperativeColors.primary, size: 22),
                         trailing: Icon(
                           _isFaqExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
@@ -781,7 +745,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
                             ? CooperativeColors.tertiary
@@ -833,7 +797,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                               ),
                               child: Text(
                                 b.preServiceUpdate?.statusLabel ?? 'Pending 1-Hr Check',
-                                style: TextStyle(
+                                style: SahayakTypography.caption().copyWith(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: b.preServiceUpdate != null
@@ -856,39 +820,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
                                       ? '🟡 ${b.worker.name} notified: Delayed by ${b.preServiceUpdate!.delayMinutes} mins (${b.preServiceUpdate!.reason ?? "En-route traffic"}).'
                                       : '🔴 ${b.worker.name} cancelled: ${b.preServiceUpdate!.reason ?? "Emergency breakdown"}. Re-dispatch available.')
-                              : 'Per Sahayak workflow, the worker submits an operational status check 1 hour prior to scheduled service (${b.scheduledSlot}).',
+                              : 'Per Work Solute workflow, the worker submits an operational status check 1 hour prior to scheduled service (${b.scheduledSlot}).',
                           style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
                         ),
-                        const SizedBox(height: 10),
-                        // Simulator test buttons for the evaluator
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            ActionChip(
-                              avatar: const Icon(Icons.check_circle_outline, size: 14, color: CooperativeColors.secondary),
-                              label: const Text('Simulate: On Time', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(WorkerPreServiceStatus.onTime),
-                            ),
-                            ActionChip(
-                              avatar: const Icon(Icons.timelapse, size: 14, color: CooperativeColors.tertiary),
-                              label: const Text('Simulate: +15m Delay', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(
-                                WorkerPreServiceStatus.delayed,
-                                delayMinutes: 15,
-                                reason: 'Traffic near Avinashi Road signal',
-                              ),
-                            ),
-                            ActionChip(
-                              avatar: const Icon(Icons.cancel_outlined, size: 14, color: CooperativeColors.error),
-                              label: const Text('Simulate: Cancel', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(
-                                WorkerPreServiceStatus.cancelled,
-                                reason: 'Urgent emergency pipeline replacement',
-                              ),
-                            ),
-                          ],
-                        ),
+
                       ],
                     ),
                   ),
@@ -937,18 +872,25 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   // 9. Bottom Interactive Actions
                   if (b.tab != BookingTab.cancelled) ...[
                     OutlinedButton.icon(
-                      onPressed: _handleCustomerCancellation,
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        _handleCustomerCancellation();
+                      },
                       icon: const Icon(Icons.cancel_presentation_rounded, size: 18, color: CooperativeColors.error),
                       label: Text(
                         b.canCancelBefore1Hour
                             ? 'Cancel Booking (Free >1hr Window)'
                             : 'Cancel Booking (Within 1hr Notice)',
-                        style: const TextStyle(color: CooperativeColors.error, fontWeight: FontWeight.w600),
+                        style: CooperativeTypography.labelMd.copyWith(
+                          color: CooperativeColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: CooperativeColors.error),
+                        minimumSize: const Size.fromHeight(48),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -957,14 +899,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: CooperativeColors.errorContainer.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: CooperativeColors.error.withValues(alpha: 0.4)),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.cancel, color: CooperativeColors.error, size: 20),
-                          SizedBox(width: 8),
-                          Text('This booking is cancelled.', style: TextStyle(color: CooperativeColors.error, fontWeight: FontWeight.w700)),
+                          const Icon(Icons.cancel, color: CooperativeColors.error, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'This booking is cancelled.',
+                            style: CooperativeTypography.labelMd.copyWith(
+                              color: CooperativeColors.error,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -973,6 +921,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
                   ElevatedButton.icon(
                     onPressed: () {
+                      HapticFeedback.mediumImpact();
                       if (widget.viewModel != null) {
                         widget.viewModel!.switchTab(ShellTab.bookings);
                       }
@@ -981,22 +930,24 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       }
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
-                    icon: const Icon(Icons.calendar_month, size: 20),
+                    icon: const Icon(Icons.calendar_month_rounded, size: 20),
                     label: const Text('View in My Bookings'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: CooperativeColors.primaryContainer,
                       foregroundColor: CooperativeColors.onPrimary,
+                      minimumSize: const Size.fromHeight(50),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       elevation: 2,
                     ),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        CupertinoPageRoute(
                           builder: (_) => BookingDetailsScreen(
                             booking: _currentBooking,
                             onBackToBookings: () {
@@ -1007,19 +958,21 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.receipt_long, size: 20),
+                    icon: const Icon(Icons.receipt_long_rounded, size: 20),
                     label: const Text('View Booking Slip & Details'),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: CooperativeColors.surfaceContainer,
                       foregroundColor: CooperativeColors.onSurface,
                       side: BorderSide.none,
+                      minimumSize: const Size.fromHeight(50),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       if (widget.onBookAnother != null) {
                         widget.onBookAnother!();
                       } else {
@@ -1027,21 +980,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       }
                     },
-                    icon: const Icon(Icons.home_repair_service, size: 20),
+                    icon: const Icon(Icons.home_repair_service_rounded, size: 20),
                     label: const Text('Book Another Service'),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: CooperativeColors.surfaceContainer,
                       foregroundColor: CooperativeColors.onSurface,
                       side: BorderSide.none,
+                      minimumSize: const Size.fromHeight(50),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
                   const SizedBox(height: 20),
                 ],
               ),
-            ),
-          ),
         ),
       ),
     );
@@ -1075,11 +1027,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               children: [
                 TextSpan(
                   text: '$title ',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: CooperativeTypography.bodySm.copyWith(fontWeight: FontWeight.w700),
                 ),
                 TextSpan(
                   text: description,
-                  style: const TextStyle(color: CooperativeColors.onSurfaceVariant),
+                  style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
                 ),
               ],
             ),
