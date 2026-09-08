@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'core/theme/theme.dart';
 import 'data/repositories/app_repository.dart';
 import 'app_view_model.dart';
-import 'ui/shared_widgets/cooperative_app_bar.dart';
 import 'ui/shared_widgets/bottom_nav_bar.dart';
 import 'ui/features/onboarding/language_selection_screen.dart';
 import 'ui/features/onboarding/login_screen.dart';
@@ -15,13 +14,13 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final repository = AppRepository();
   final viewModel = AppViewModel(repository: repository);
-  runApp(SahayakApp(viewModel: viewModel));
+  runApp(WorkSoluteApp(viewModel: viewModel));
 }
 
-class SahayakApp extends StatelessWidget {
+class WorkSoluteApp extends StatelessWidget {
   final AppViewModel viewModel;
 
-  const SahayakApp({
+  const WorkSoluteApp({
     super.key,
     required this.viewModel,
   });
@@ -32,7 +31,7 @@ class SahayakApp extends StatelessWidget {
       listenable: viewModel,
       builder: (context, _) {
         return MaterialApp(
-          title: 'Sahayak Cooperative Home Services',
+          title: 'Work Solute Cooperative Home Services',
           debugShowCheckedModeBanner: false,
           theme: CooperativeTheme.lightTheme,
           home: _buildScreen(viewModel.currentScreen),
@@ -55,6 +54,8 @@ class SahayakApp extends StatelessWidget {
   }
 }
 
+typedef SahayakApp = WorkSoluteApp;
+
 class MainShell extends StatelessWidget {
   final AppViewModel viewModel;
 
@@ -66,9 +67,6 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CooperativeAppBar(
-        viewModel: viewModel,
-      ),
       body: _buildTabBody(viewModel.currentTab),
       bottomNavigationBar: CooperativeBottomNavBar(
         viewModel: viewModel,

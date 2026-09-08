@@ -1,3 +1,8 @@
+enum UserAccountType {
+  household,
+  institution,
+}
+
 class UserAccount {
   final String id;
   final String name;
@@ -6,6 +11,9 @@ class UserAccount {
   final String society;
   final String ward;
   final DateTime createdAt;
+  final UserAccountType accountType;
+  final String? organizationName;
+  final String? siteAddress;
 
   const UserAccount({
     required this.id,
@@ -15,10 +23,21 @@ class UserAccount {
     required this.society,
     required this.ward,
     required this.createdAt,
+    this.accountType = UserAccountType.household,
+    this.organizationName,
+    this.siteAddress,
   });
 
+  bool get isInstitution => accountType == UserAccountType.institution;
+  bool get isHousehold => accountType == UserAccountType.household;
+
+  String get displayName => (isInstitution && organizationName != null && organizationName!.isNotEmpty)
+      ? organizationName!
+      : name;
+
   String get initials {
-    final parts = name.trim().split(' ');
+    final target = displayName;
+    final parts = target.trim().split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
@@ -35,6 +54,9 @@ class UserAccount {
     String? society,
     String? ward,
     DateTime? createdAt,
+    UserAccountType? accountType,
+    String? organizationName,
+    String? siteAddress,
   }) {
     return UserAccount(
       id: id ?? this.id,
@@ -44,6 +66,9 @@ class UserAccount {
       society: society ?? this.society,
       ward: ward ?? this.ward,
       createdAt: createdAt ?? this.createdAt,
+      accountType: accountType ?? this.accountType,
+      organizationName: organizationName ?? this.organizationName,
+      siteAddress: siteAddress ?? this.siteAddress,
     );
   }
 }

@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sahayak_home_services/main.dart';
-import 'package:sahayak_home_services/app_view_model.dart';
-import 'package:sahayak_home_services/data/repositories/app_repository.dart';
-import 'package:sahayak_home_services/data/models/language.dart';
-import 'package:sahayak_home_services/ui/shared_widgets/bottom_nav_bar.dart';
+import 'package:work_solute/main.dart';
+import 'package:work_solute/app_view_model.dart';
+import 'package:work_solute/data/repositories/app_repository.dart';
+import 'package:work_solute/data/models/language.dart';
+import 'package:work_solute/ui/shared_widgets/bottom_nav_bar.dart';
 
 void main() {
-  testWidgets('SahayakApp loads language selection and navigates through onboarding', (WidgetTester tester) async {
+  testWidgets('WorkSoluteApp loads language selection and navigates through onboarding', (WidgetTester tester) async {
     final repository = AppRepository();
     final viewModel = AppViewModel(repository: repository);
 
-    await tester.pumpWidget(SahayakApp(viewModel: viewModel));
+    await tester.pumpWidget(WorkSoluteApp(viewModel: viewModel));
     await tester.pumpAndSettle();
 
     // Verify Language Selection Screen is shown first
@@ -32,7 +32,7 @@ void main() {
 
     // Verify Login Screen in Tamil
     expect(find.text(viewModel.strings.get('municipal_network')), findsOneWidget);
-    expect(find.text('Sahayak'), findsWidgets);
+    expect(find.text('Work Solute'), findsWidgets);
 
     // Proceed to Phone Verification
     viewModel.navigateTo(AppScreen.phoneVerification);

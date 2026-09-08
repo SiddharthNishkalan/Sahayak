@@ -35,7 +35,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   void initState() {
     super.initState();
     _currentBooking = widget.booking;
-    _isPaid = _currentBooking.currentStage == BookingStage.paid;
+    _isPaid = _currentBooking.currentStage == BookingStage.paid ||
+        _currentBooking.tab == BookingTab.completed ||
+        (_currentBooking.invoice?.isPaid ?? false);
+    if (_currentBooking.rating > 0) {
+      _selectedRating = _currentBooking.rating;
+      _reviewSubmitted = true;
+    }
+    if (_currentBooking.reviewText.isNotEmpty) {
+      _reviewController.text = _currentBooking.reviewText;
+    }
   }
 
   @override
@@ -44,7 +53,22 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     super.dispose();
   }
 
+  IconData _getServiceIcon(String serviceName) {
+    final s = serviceName.toLowerCase();
+    if (s.contains('electr')) return Icons.bolt_rounded;
+    if (s.contains('clean')) return Icons.cleaning_services_rounded;
+    if (s.contains('carpent')) return Icons.carpenter_rounded;
+    if (s.contains('caregiv')) return Icons.volunteer_activism_rounded;
+    if (s.contains('driv')) return Icons.directions_car_rounded;
+    if (s.contains('garden')) return Icons.yard_rounded;
+    if (s.contains('appliance')) return Icons.home_repair_service_rounded;
+    if (s.contains('plumb')) return Icons.plumbing_rounded;
+    if (s.contains('multi')) return Icons.hub_rounded;
+    return Icons.handyman_rounded;
+  }
+
   void _copyBookingId() {
+    HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: _currentBooking.id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -58,15 +82,19 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         ),
         backgroundColor: CooperativeColors.inverseSurface,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         duration: const Duration(seconds: 2),
       ),
     );
   }
 
   void _handlePay() {
+    HapticFeedback.mediumImpact();
     setState(() {
       _isPaid = true;
+      _currentBooking = _currentBooking.copyWith(
+        currentStage: BookingStage.paid,
+      );
     });
     TaxInvoiceDialog.show(
       context,
@@ -75,6 +103,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 
   void _submitReview() {
+    if (!_isPaid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete payment before submitting a review.'),
+          backgroundColor: CooperativeColors.error,
+        ),
+      );
+      return;
+    }
     if (_selectedRating <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -98,8 +135,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             const Icon(Icons.verified, color: CooperativeColors.secondaryContainer, size: 20),
             Flexible(
               child: Text('Review & Rating (*) submitted to Worker Guild!',
-                  style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onPrimary),
-                  overflow: TextOverflow.ellipsis),
+                  style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onPrimary)),
             ),
           ],
         ),
@@ -110,18 +146,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     );
   }
 
-  void _simulateStatus(WorkerPreServiceStatus status, {int delayMinutes = 0, String? reason}) {
-    setState(() {
-      _currentBooking = _currentBooking.copyWith(
-        preServiceUpdate: WorkerPreServiceUpdate(
-          status: status,
-          delayMinutes: delayMinutes,
-          reason: reason,
-          sentAt: DateTime.now(),
-        ),
-      );
-    });
-  }
+
 
   void _handleCustomerCancellation() {
     final canCancelFree = _currentBooking.canCancelBefore1Hour;
@@ -129,7 +154,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: CooperativeColors.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Row(
           children: [
             Icon(
@@ -141,7 +166,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Expanded(
               child: Text(
                 canCancelFree ? 'Cancel Service Booking?' : '1-Hour Policy Warning',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: SahayakTypography.titleMedium().copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -197,6 +222,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
   }
 
+  String _getPreServiceBadgeText(WorkerPreServiceUpdate? update) {
+    if (update == null) return 'Pending Check';
+    switch (update.status) {
+      case WorkerPreServiceStatus.onTime:
+        return 'On Time';
+      case WorkerPreServiceStatus.delayed:
+        return 'Delayed +${update.delayMinutes}m';
+      case WorkerPreServiceStatus.cancelled:
+      case WorkerPreServiceStatus.cancelledWithReason:
+      case WorkerPreServiceStatus.cancelledByWorker:
+        return 'Cancelled';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final b = _currentBooking;
@@ -204,81 +243,40 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return Scaffold(
       backgroundColor: CooperativeColors.surface,
       appBar: AppBar(
-        backgroundColor: CooperativeColors.surfaceContainerLowest.withValues(alpha: 0.95),
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.04),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: CooperativeColors.onSurface),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          splashRadius: 24,
           onPressed: () {
+            HapticFeedback.lightImpact();
             if (widget.onBackToBookings != null) {
               widget.onBackToBookings!();
             }
             Navigator.of(context).pop();
           },
         ),
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              height: 28,
-              width: 28,
-              errorBuilder: (_, _, _) => const Icon(Icons.handshake, color: CooperativeColors.primary, size: 24),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Booking Details',
-                  style: CooperativeTypography.headlineSm.copyWith(
-                    color: CooperativeColors.onSurface,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Row(
-                  children: [
-                    const Icon(Icons.verified, color: CooperativeColors.secondary, size: 14),
-                    const SizedBox(width: 3),
-                    Text(
-                      'Co-op Assured',
-                      style: CooperativeTypography.caption.copyWith(
-                        color: CooperativeColors.secondary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundImage: const AssetImage('assets/images/user_avatar.png'),
-              backgroundColor: CooperativeColors.surfaceContainerHigh,
-            ),
+        title: Text(
+          'Booking Details',
+          style: SahayakTypography.titleMedium().copyWith(
+            color: CooperativeColors.onSurface,
+            fontWeight: FontWeight.w700,
           ),
-        ],
+        ),
+        centerTitle: false,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
                   // 1. Booking Identification Card
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -290,28 +288,26 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     child: Column(
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  '#${b.id}',
-                                  style: CooperativeTypography.headlineSm.copyWith(
-                                    color: CooperativeColors.onSurface,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                            Flexible(
+                              child: Text(
+                                '#${b.id}',
+                                style: CooperativeTypography.headlineSm.copyWith(
+                                  color: CooperativeColors.onSurface,
+                                  fontWeight: FontWeight.w700,
                                 ),
-                                const SizedBox(width: 6),
-                                InkWell(
-                                  onTap: _copyBookingId,
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(2),
-                                    child: Icon(Icons.copy, size: 16, color: CooperativeColors.onSurfaceVariant),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: _copyBookingId,
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                child: Icon(Icons.copy_rounded, size: 16, color: CooperativeColors.onSurfaceVariant),
+                              ),
+                            ),
+                            const Spacer(),
                             const CoOpProtectedBadge(),
                           ],
                         ),
@@ -323,33 +319,39 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                               'Status',
                               style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _isPaid
-                                    ? CooperativeColors.secondaryContainer.withValues(alpha: 0.4)
-                                    : CooperativeColors.surfaceContainer,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: _isPaid ? CooperativeColors.secondary : CooperativeColors.primary,
-                                      shape: BoxShape.circle,
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _isPaid
+                                      ? CooperativeColors.secondaryContainer.withValues(alpha: 0.4)
+                                      : CooperativeColors.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: _isPaid ? CooperativeColors.secondary : CooperativeColors.primary,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    _isPaid ? 'Completed · Paid' : 'Job Completed · Pending Pay',
-                                    style: CooperativeTypography.labelSm.copyWith(
-                                      color: _isPaid ? CooperativeColors.secondary : CooperativeColors.primary,
-                                      fontWeight: FontWeight.w700,
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        _isPaid ? 'Completed · Paid' : 'Job Completed · Pending Pay',
+                                        style: CooperativeTypography.labelSm.copyWith(
+                                          color: _isPaid ? CooperativeColors.secondary : CooperativeColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -365,7 +367,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -386,7 +388,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                 color: CooperativeColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.plumbing, color: CooperativeColors.primary, size: 26),
+                              child: Icon(_getServiceIcon(b.serviceName), color: CooperativeColors.primary, size: 26),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -482,7 +484,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -497,13 +499,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Service Progress',
-                              style: CooperativeTypography.headlineSm.copyWith(
-                                color: CooperativeColors.onSurface,
-                                fontWeight: FontWeight.w700,
+                            Expanded(
+                              child: Text(
+                                'Service Progress',
+                                style: CooperativeTypography.headlineSm.copyWith(
+                                  color: CooperativeColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
                               _isPaid ? 'Stage 5 of 5' : 'Stage 4 of 5',
                               style: CooperativeTypography.caption.copyWith(
@@ -560,12 +565,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 4. Doorstep Verification OTP Pill
+                  // 4. Doorstep Verification OTP Security Card
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: CooperativeColors.primary.withValues(alpha: 0.15)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -574,57 +580,127 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text(
-                              'DOORSTEP SECURITY CODE',
-                              style: CooperativeTypography.caption.copyWith(
-                                color: CooperativeColors.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
+                            const Icon(Icons.shield, color: CooperativeColors.primary, size: 18),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'DOORSTEP SECURITY OTP',
+                                style: CooperativeTypography.caption.copyWith(
+                                  color: CooperativeColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Text(
-                                  b.doorstepOtp,
-                                  style: CooperativeTypography.headlineLg.copyWith(
-                                    color: CooperativeColors.primary,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 4.0,
-                                  ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: CooperativeColors.secondary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                const SizedBox(width: 10),
-                                Row(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.verified, color: CooperativeColors.secondary, size: 16),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      'Verified at 2:14 PM',
-                                      style: CooperativeTypography.caption.copyWith(
-                                        color: CooperativeColors.secondary,
-                                        fontWeight: FontWeight.w700,
+                                    const Icon(Icons.verified, color: CooperativeColors.secondary, size: 14),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Verified',
+                                        style: CooperativeTypography.caption.copyWith(
+                                          color: CooperativeColors.secondary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: CooperativeColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: CooperativeColors.primary.withValues(alpha: 0.2)),
+                              ),
+                              child: Text(
+                                b.doorstepOtp,
+                                style: CooperativeTypography.headlineLg.copyWith(
+                                  color: CooperativeColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 6.0,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            InkWell(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                Clipboard.setData(ClipboardData(text: b.doorstepOtp));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('OTP ${b.doorstepOtp} copied to clipboard',
+                                        style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onPrimary)),
+                                    backgroundColor: CooperativeColors.inverseSurface,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                child: Icon(Icons.copy_rounded, size: 18, color: CooperativeColors.primary),
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: CooperativeColors.secondary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.key, color: CooperativeColors.secondary, size: 24),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                         Container(
-                          width: 44,
-                          height: 44,
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: CooperativeColors.secondary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
+                            color: CooperativeColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.key, color: CooperativeColors.secondary, size: 24),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.lock_outline, size: 14, color: CooperativeColors.onSurfaceVariant),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Only share with ${b.worker.name.split(' ').first} in person at your door. Never share via phone or message.',
+                                  style: CooperativeTypography.caption.copyWith(
+                                    color: CooperativeColors.onSurfaceVariant,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -637,7 +713,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -672,11 +748,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        b.worker.name,
-                                        style: CooperativeTypography.headlineSm.copyWith(
-                                          color: CooperativeColors.onSurface,
-                                          fontWeight: FontWeight.w700,
+                                      Flexible(
+                                        child: Text(
+                                          b.worker.name,
+                                          style: CooperativeTypography.headlineSm.copyWith(
+                                            color: CooperativeColors.onSurface,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -703,10 +781,12 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 6),
-                                      Text(
-                                        '· ${b.worker.completedJobsCount} completed jobs',
-                                        style: CooperativeTypography.caption.copyWith(
-                                          color: CooperativeColors.onSurfaceVariant,
+                                      Flexible(
+                                        child: Text(
+                                          '· ${b.worker.completedJobsCount} completed jobs',
+                                          style: CooperativeTypography.caption.copyWith(
+                                            color: CooperativeColors.onSurfaceVariant,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -726,16 +806,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.lock, size: 16, color: CooperativeColors.onSurfaceVariant),
-                                  const SizedBox(width: 6),
-                                  Text('+91 98432 •••••',
-                                      style: CooperativeTypography.bodySm.copyWith(
-                                        color: CooperativeColors.onSurfaceVariant,
-                                      )),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.lock, size: 16, color: CooperativeColors.onSurfaceVariant),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text('+91 98432 •••••',
+                                          style: CooperativeTypography.bodySm.copyWith(
+                                            color: CooperativeColors.onSurfaceVariant,
+                                          )),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 'Privacy Masked',
                                 style: CooperativeTypography.caption.copyWith(
@@ -752,6 +837,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Calling ${b.worker.name}...')),
                                   );
@@ -762,6 +848,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: CooperativeColors.surfaceContainer,
                                   side: BorderSide.none,
+                                  minimumSize: const Size.fromHeight(46),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -771,8 +858,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () {
+                                  HapticFeedback.lightImpact();
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Connecting to Sahayak Secure Chat...')),
+                                    SnackBar(content: Text('Connecting to Work Solute Secure Chat...')),
                                   );
                                 },
                                 icon: const Icon(Icons.chat, size: 18, color: CooperativeColors.primary),
@@ -781,6 +869,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: CooperativeColors.surfaceContainer,
                                   side: BorderSide.none,
+                                  minimumSize: const Size.fromHeight(46),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -794,11 +883,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 6. Live Transit Tracker Preview
+                  // 6. Worker 1-Hour Pre-Service Notification Card
+                  _buildPreServiceUpdateCard(b),
+
+                  const SizedBox(height: 14),
+
+                  // 7. Live Transit Tracker Preview
                   Container(
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -818,6 +912,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                               child: CustomVectorMap(
                                 locationLabel: 'Ward 5, Shivaji Nagar',
                                 interactive: false,
+                                showControls: false,
                               ),
                             ),
                             Positioned(
@@ -893,23 +988,25 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           color: CooperativeColors.surfaceContainerLow,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.near_me, size: 18, color: CooperativeColors.onSurfaceVariant),
-                                  const SizedBox(width: 6),
-                                  Text('1.4 km from Shivaji Nagar Hub',
-                                      style: CooperativeTypography.bodySm.copyWith(
-                                        color: CooperativeColors.onSurface,
-                                      )),
-                                ],
+                              const Icon(Icons.near_me, size: 18, color: CooperativeColors.onSurfaceVariant),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  '1.4 km from Shivaji Nagar Hub',
+                                  style: CooperativeTypography.bodySm.copyWith(
+                                    color: CooperativeColors.onSurface,
+                                  ),
+                                ),
                               ),
-                              Text(
-                                'Logged Arrival: 2:12 PM',
-                                style: CooperativeTypography.caption.copyWith(
-                                  color: CooperativeColors.secondary,
-                                  fontWeight: FontWeight.w700,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  'Arrival: 2:12 PM',
+                                  style: CooperativeTypography.caption.copyWith(
+                                    color: CooperativeColors.secondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                             ],
@@ -926,7 +1023,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -941,13 +1038,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Payment Summary',
-                              style: CooperativeTypography.headlineSm.copyWith(
-                                color: CooperativeColors.onSurface,
-                                fontWeight: FontWeight.w700,
+                            Expanded(
+                              child: Text(
+                                'Payment Summary',
+                                style: CooperativeTypography.headlineSm.copyWith(
+                                  color: CooperativeColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
                               'Zero Commission Model',
                               style: CooperativeTypography.caption.copyWith(
@@ -973,21 +1073,24 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Total Final Amount',
-                                      style: CooperativeTypography.headlineSm.copyWith(
-                                        color: CooperativeColors.onSurface,
-                                        fontWeight: FontWeight.w700,
-                                      )),
-                                  Text('100% paid to worker & welfare fund',
-                                      style: CooperativeTypography.caption.copyWith(
-                                        color: CooperativeColors.secondary,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Total Final Amount',
+                                        style: CooperativeTypography.headlineSm.copyWith(
+                                          color: CooperativeColors.onSurface,
+                                          fontWeight: FontWeight.w700,
+                                        )),
+                                    Text('100% paid to worker & welfare fund',
+                                        style: CooperativeTypography.caption.copyWith(
+                                          color: CooperativeColors.secondary,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 '₹850',
                                 style: CooperativeTypography.headlineLg.copyWith(
@@ -1046,360 +1149,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 7b. Worker 1-Hour Pre-Service Notification Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
-                            ? CooperativeColors.tertiary
-                            : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
-                                ? CooperativeColors.error
-                                : CooperativeColors.secondary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.notifications_active_rounded,
-                                  color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
-                                      ? CooperativeColors.tertiary
-                                      : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
-                                          ? CooperativeColors.error
-                                          : CooperativeColors.secondary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Worker 1-Hr Pre-Service Update',
-                                  style: CooperativeTypography.labelMd.copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: b.preServiceUpdate != null
-                                    ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
-                                        ? CooperativeColors.secondaryContainer
-                                        : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
-                                            ? CooperativeColors.tertiaryFixed
-                                            : CooperativeColors.errorContainer)
-                                    : CooperativeColors.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                b.preServiceUpdate?.statusLabel ?? 'Pending 1-Hr Check',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: b.preServiceUpdate != null
-                                      ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
-                                          ? CooperativeColors.onSecondaryContainer
-                                          : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
-                                              ? CooperativeColors.onTertiaryFixed
-                                              : CooperativeColors.error)
-                                      : CooperativeColors.outline,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          b.preServiceUpdate != null
-                              ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
-                                  ? '🟢 ${b.worker.name} checked in: "On schedule, tools ready, proceeding to your address."'
-                                  : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
-                                      ? '🟡 ${b.worker.name} notified: Delayed by ${b.preServiceUpdate!.delayMinutes} mins (${b.preServiceUpdate!.reason ?? "En-route traffic"}).'
-                                      : '🔴 ${b.worker.name} cancelled: ${b.preServiceUpdate!.reason ?? "Emergency breakdown"}. Re-dispatch available.')
-                              : 'Per Sahayak workflow, the worker submits an operational status check 1 hour prior to scheduled service (${b.scheduledSlot}).',
-                          style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            ActionChip(
-                              avatar: const Icon(Icons.check_circle_outline, size: 14, color: CooperativeColors.secondary),
-                              label: const Text('Simulate: On Time', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(WorkerPreServiceStatus.onTime),
-                            ),
-                            ActionChip(
-                              avatar: const Icon(Icons.timelapse, size: 14, color: CooperativeColors.tertiary),
-                              label: const Text('Simulate: +15m Delay', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(
-                                WorkerPreServiceStatus.delayed,
-                                delayMinutes: 15,
-                                reason: 'Traffic near Avinashi Road signal',
-                              ),
-                            ),
-                            ActionChip(
-                              avatar: const Icon(Icons.cancel_outlined, size: 14, color: CooperativeColors.error),
-                              label: const Text('Simulate: Cancel', style: TextStyle(fontSize: 10)),
-                              onPressed: () => _simulateStatus(
-                                WorkerPreServiceStatus.cancelled,
-                                reason: 'Urgent municipal pipe overhaul',
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (b.tab != BookingTab.cancelled) ...[
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: _handleCustomerCancellation,
-                            icon: const Icon(Icons.cancel_presentation_rounded, size: 18, color: CooperativeColors.error),
-                            label: Text(
-                              b.canCancelBefore1Hour
-                                  ? 'Cancel Booking (Free >1hr Window)'
-                                  : 'Cancel Booking (Within 1hr Notice)',
-                              style: const TextStyle(color: CooperativeColors.error, fontWeight: FontWeight.w600),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: CooperativeColors.error),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // 8. Rating & Cooperative Feedback Component (Mandatory *)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: CooperativeColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: 'Service Review & Rating ',
-                                    style: CooperativeTypography.headlineSm.copyWith(
-                                      color: CooperativeColors.onSurface,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: '*',
-                                    style: CooperativeTypography.headlineSm.copyWith(
-                                      color: CooperativeColors.error,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: ' (Mandatory)',
-                                    style: CooperativeTypography.caption.copyWith(
-                                      color: CooperativeColors.error,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (_reviewSubmitted)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: CooperativeColors.secondaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text('Submitted', style: TextStyle(fontSize: 10, color: CooperativeColors.onSecondaryContainer, fontWeight: FontWeight.bold)),
-                              ),
-                          ],
-                        ),
-                        Text(
-                          'How was your experience with ${b.worker.name}?',
-                          style: CooperativeTypography.bodySm.copyWith(
-                            color: CooperativeColors.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: CooperativeColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(5, (index) {
-                                  final starIndex = index + 1;
-                                  return IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedRating = starIndex;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      Icons.star,
-                                      size: 32,
-                                      color: starIndex <= _selectedRating
-                                          ? CooperativeColors.tertiary
-                                          : CooperativeColors.outlineVariant,
-                                    ),
-                                  );
-                                }),
-                              ),
-                              Text(
-                                _getRatingLabel(_selectedRating),
-                                style: CooperativeTypography.labelMd.copyWith(
-                                  color: CooperativeColors.tertiary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Tell the co-op about the work',
-                          style: CooperativeTypography.labelSm.copyWith(
-                            color: CooperativeColors.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: _reviewController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Share specific details about promptness, hygiene, or craftsmanship...',
-                            filled: true,
-                            fillColor: CooperativeColors.surfaceContainerLowest,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: CooperativeColors.outlineVariant),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.5)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Completed Work Verification',
-                          style: CooperativeTypography.labelSm.copyWith(
-                            color: CooperativeColors.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    color: CooperativeColors.surfaceContainer,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.asset(
-                                      'assets/images/logo.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: Container(
-                                    color: CooperativeColors.secondary.withValues(alpha: 0.85),
-                                    padding: const EdgeInsets.symmetric(vertical: 2),
-                                    child: Text(
-                                      'Fixed',
-                                      textAlign: TextAlign.center,
-                                      style: CooperativeTypography.caption.copyWith(
-                                        color: CooperativeColors.onSecondary,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Camera & gallery proof photo upload active')),
-                                  );
-                                },
-                                icon: const Icon(Icons.add_a_photo, size: 20, color: CooperativeColors.onSurfaceVariant),
-                                label: Text('Add more proof photos',
-                                    style: CooperativeTypography.bodySm.copyWith(
-                                      color: CooperativeColors.onSurfaceVariant,
-                                    )),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: CooperativeColors.surfaceContainer,
-                                  side: BorderSide.none,
-                                  padding: const EdgeInsets.symmetric(vertical: 18),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _reviewSubmitted ? null : _submitReview,
-                            icon: Icon(_reviewSubmitted ? Icons.check : Icons.rate_review, size: 18),
-                            label: Text(_reviewSubmitted ? 'Review Submitted' : 'Submit Review to Co-op Guild'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: CooperativeColors.surfaceContainerHighest,
-                              foregroundColor: CooperativeColors.onSurface,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // 9. Service Review & Rating Component (Placed directly after payment)
+                  _buildReviewAndRatingSection(b),
 
                   const SizedBox(height: 14),
 
@@ -1451,9 +1202,359 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   const SizedBox(height: 24),
                 ],
               ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreServiceUpdateCard(Booking b) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CooperativeColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
+              ? CooperativeColors.tertiary
+              : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
+                  ? CooperativeColors.error
+                  : CooperativeColors.secondary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.notifications_active_rounded,
+                color: b.preServiceUpdate?.status == WorkerPreServiceStatus.delayed
+                    ? CooperativeColors.tertiary
+                    : b.preServiceUpdate?.status == WorkerPreServiceStatus.cancelled
+                        ? CooperativeColors.error
+                        : CooperativeColors.secondary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Worker 1-Hr Status Check',
+                  style: CooperativeTypography.labelMd.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: b.preServiceUpdate != null
+                      ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
+                          ? CooperativeColors.secondaryContainer
+                          : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
+                              ? CooperativeColors.tertiaryFixed
+                              : CooperativeColors.errorContainer)
+                      : CooperativeColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _getPreServiceBadgeText(b.preServiceUpdate),
+                  style: SahayakTypography.caption().copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: b.preServiceUpdate != null
+                        ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
+                            ? CooperativeColors.onSecondaryContainer
+                            : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
+                                ? CooperativeColors.onTertiaryFixed
+                                : CooperativeColors.error)
+                        : CooperativeColors.outline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            b.preServiceUpdate != null
+                ? (b.preServiceUpdate!.status == WorkerPreServiceStatus.onTime
+                    ? '🟢 ${b.worker.name} checked in: "On schedule, tools ready, proceeding to your address."'
+                    : b.preServiceUpdate!.status == WorkerPreServiceStatus.delayed
+                        ? '🟡 ${b.worker.name} notified: Delayed by ${b.preServiceUpdate!.delayMinutes} mins (${b.preServiceUpdate!.reason ?? "En-route traffic"}).'
+                        : '🔴 ${b.worker.name} cancelled: ${b.preServiceUpdate!.reason ?? "Emergency breakdown"}. Re-dispatch available.')
+                : 'Per Work Solute workflow, the worker submits an operational status check 1 hour prior to scheduled service (${b.scheduledSlot}).',
+            style: CooperativeTypography.bodySm.copyWith(color: CooperativeColors.onSurfaceVariant),
+          ),
+          if (b.tab != BookingTab.cancelled) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _handleCustomerCancellation();
+              },
+              icon: const Icon(Icons.cancel_presentation_rounded, size: 18, color: CooperativeColors.error),
+              label: Text(
+                b.canCancelBefore1Hour
+                    ? 'Cancel Booking (Free >1hr Window)'
+                    : 'Cancel Booking (Within 1hr Notice)',
+                style: CooperativeTypography.labelMd.copyWith(
+                  color: CooperativeColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: CooperativeColors.error),
+                minimumSize: const Size.fromHeight(46),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewAndRatingSection(Booking b) {
+    if (!_isPaid) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: CooperativeColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: CooperativeColors.surfaceContainerHigh,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.rate_review_outlined, size: 18, color: CooperativeColors.outline),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Service Review & Rating ',
+                          style: CooperativeTypography.labelLg.copyWith(
+                            color: CooperativeColors.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '*',
+                          style: CooperativeTypography.labelLg.copyWith(
+                            color: CooperativeColors.error,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: CooperativeColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'After Payment',
+                    style: CooperativeTypography.caption.copyWith(
+                      color: CooperativeColors.outline,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Technician performance review, 5-star rating, and job proof verification will unlock immediately after completing payment for ₹850 above.',
+              style: CooperativeTypography.bodySm.copyWith(
+                color: CooperativeColors.onSurfaceVariant,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CooperativeColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Service Review & Rating ',
+                        style: CooperativeTypography.headlineSm.copyWith(
+                          color: CooperativeColors.onSurface,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '*',
+                        style: CooperativeTypography.headlineSm.copyWith(
+                          color: CooperativeColors.error,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' (Mandatory)',
+                        style: CooperativeTypography.caption.copyWith(
+                          color: CooperativeColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_reviewSubmitted) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: CooperativeColors.secondaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('Submitted',
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: CooperativeColors.onSecondaryContainer,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ],
+          ),
+          Text(
+            'How was your experience with ${b.worker.name}?',
+            style: CooperativeTypography.bodySm.copyWith(
+              color: CooperativeColors.onSurfaceVariant,
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: CooperativeColors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    final starIndex = index + 1;
+                    return IconButton(
+                      splashRadius: 24,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _selectedRating = starIndex;
+                        });
+                      },
+                      icon: Icon(
+                        Icons.star,
+                        size: 32,
+                        color: starIndex <= _selectedRating
+                            ? CooperativeColors.tertiary
+                            : CooperativeColors.outlineVariant,
+                      ),
+                    );
+                  }),
+                ),
+                Text(
+                  _getRatingLabel(_selectedRating),
+                  style: CooperativeTypography.labelMd.copyWith(
+                    color: CooperativeColors.tertiary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Tell the co-op about the work',
+            style: CooperativeTypography.labelSm.copyWith(
+              color: CooperativeColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _reviewController,
+            maxLines: 3,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: 'Share specific details about promptness, hygiene, or craftsmanship...',
+              filled: true,
+              fillColor: CooperativeColors.surfaceContainerLowest,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: CooperativeColors.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _reviewSubmitted ? null : _submitReview,
+              icon: Icon(_reviewSubmitted ? Icons.check : Icons.rate_review, size: 18),
+              label: Text(_reviewSubmitted ? 'Review Submitted' : 'Submit Review to Co-op Guild'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CooperativeColors.surfaceContainerHighest,
+                foregroundColor: CooperativeColors.onSurface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

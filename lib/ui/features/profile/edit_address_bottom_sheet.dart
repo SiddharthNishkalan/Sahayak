@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../data/models/address.dart';
@@ -8,12 +9,16 @@ class EditAddressBottomSheet extends StatefulWidget {
   final SavedAddress? initialAddress;
   final ValueChanged<SavedAddress> onSave;
   final ValueChanged<String>? onDelete;
+  final bool isInstitution;
+  final int? nextOfficeNumber;
 
   const EditAddressBottomSheet({
     super.key,
     this.initialAddress,
     required this.onSave,
     this.onDelete,
+    this.isInstitution = false,
+    this.nextOfficeNumber,
   });
 
   static Future<void> show(
@@ -21,15 +26,24 @@ class EditAddressBottomSheet extends StatefulWidget {
     SavedAddress? address,
     required ValueChanged<SavedAddress> onSave,
     ValueChanged<String>? onDelete,
+    bool isInstitution = false,
+    int? nextOfficeNumber,
   }) {
+    HapticFeedback.lightImpact();
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      showDragHandle: true,
+      backgroundColor: CooperativeColors.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => EditAddressBottomSheet(
         initialAddress: address,
         onSave: onSave,
         onDelete: onDelete,
+        isInstitution: isInstitution,
+        nextOfficeNumber: nextOfficeNumber,
       ),
     );
   }
@@ -39,7 +53,31 @@ class EditAddressBottomSheet extends StatefulWidget {
 }
 
 class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
+  static const List<String> availableWards = [
+    'Ward 5, Shivaji Nagar',
+    'Ward 6, Gandhipuram',
+    'Ward 7, Saibaba Colony',
+    'Ward 12, Peelamedu',
+  ];
+
+  static String _normalizeWard(String rawWard) {
+    for (final w in availableWards) {
+      if (rawWard.toLowerCase().contains(w.toLowerCase()) ||
+          w.toLowerCase().contains(rawWard.toLowerCase())) {
+        return w;
+      }
+    }
+    for (final w in availableWards) {
+      final namePart = w.split(',').last.trim().toLowerCase();
+      if (rawWard.toLowerCase().contains(namePart) || namePart.contains(rawWard.toLowerCase())) {
+        return w;
+      }
+    }
+    return availableWards.first;
+  }
+
   late String _selectedLabel;
+  late TextEditingController _customLabelController;
   late TextEditingController _streetController;
   late TextEditingController _landmarkController;
   late TextEditingController _pincodeController;
@@ -53,17 +91,42 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
   @override
   void initState() {
     super.initState();
-    final addr = widget.initialAddress ?? SavedAddress.defaultHome;
-    _selectedLabel = addr.label;
-    _streetController = TextEditingController(text: addr.fullAddress);
-    _landmarkController = TextEditingController(text: addr.landmark);
-    _pincodeController = TextEditingController(text: addr.pincode);
-    _selectedWard = addr.ward;
-    _isDefault = addr.isDefault;
+    if (widget.initialAddress != null) {
+      final addr = widget.initialAddress!;
+      if (widget.isInstitution) {
+        _selectedLabel = addr.label;
+        _customLabelController = TextEditingController(text: addr.label);
+      } else {
+        _selectedLabel = (addr.label == 'Home' || addr.label == 'Office') ? addr.label : 'Other';
+        _customLabelController = TextEditingController(
+          text: (addr.label != 'Home' && addr.label != 'Office') ? addr.label : '',
+        );
+      }
+      _streetController = TextEditingController(text: addr.streetAddress);
+      _landmarkController = TextEditingController(text: addr.landmark);
+      _pincodeController = TextEditingController(text: addr.pincode);
+      _selectedWard = _normalizeWard(addr.ward);
+      _isDefault = addr.isDefault;
+    } else {
+      if (widget.isInstitution) {
+        final defaultOffice = 'Office ${widget.nextOfficeNumber ?? 1}';
+        _selectedLabel = defaultOffice;
+        _customLabelController = TextEditingController(text: defaultOffice);
+      } else {
+        _selectedLabel = 'Home';
+        _customLabelController = TextEditingController();
+      }
+      _streetController = TextEditingController();
+      _landmarkController = TextEditingController();
+      _pincodeController = TextEditingController(text: '641002');
+      _selectedWard = availableWards.first;
+      _isDefault = false;
+    }
   }
 
   @override
   void dispose() {
+    _customLabelController.dispose();
     _streetController.dispose();
     _landmarkController.dispose();
     _pincodeController.dispose();
@@ -81,8 +144,11 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
     setState(() {
       _isGpsLoading = false;
       _isGpsDetected = true;
-      _selectedWard = 'Shivaji Nagar';
+      _selectedWard = 'Ward 5, Shivaji Nagar';
       _pincodeController.text = '641002';
+      if (_streetController.text.trim().isEmpty) {
+        _streetController.text = 'Ward 5, Shivaji Nagar GIS Hub';
+      }
       _showMapPreview = true;
     });
 
@@ -105,14 +171,36 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
   }
 
   void _save() {
+    final street = _streetController.text.trim();
+    if (street.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter street address / door number'),
+          backgroundColor: CooperativeColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final finalLabel = widget.isInstitution
+        ? (_customLabelController.text.trim().isNotEmpty
+            ? _customLabelController.text.trim()
+            : _selectedLabel)
+        : ((_selectedLabel == 'Other' && _customLabelController.text.trim().isNotEmpty)
+            ? _customLabelController.text.trim()
+            : _selectedLabel);
+
     final updated = SavedAddress(
       id: widget.initialAddress?.id ?? 'addr_${DateTime.now().millisecondsSinceEpoch}',
-      label: _selectedLabel,
-      type: _selectedLabel,
-      streetAddress: _streetController.text.trim(),
-      landmark: _landmarkController.text.trim(),
+      label: finalLabel,
+      type: widget.isInstitution ? 'Office' : _selectedLabel,
+      streetAddress: street,
+      landmark: _landmarkController.text.trim().isEmpty ? 'Near landmark' : _landmarkController.text.trim(),
       ward: _selectedWard,
-      pincode: _pincodeController.text.trim(),
+      pincode: _pincodeController.text.trim().isEmpty ? '641002' : _pincodeController.text.trim(),
       latitude: 11.0168,
       longitude: 76.9558,
       isDefault: _isDefault,
@@ -163,36 +251,56 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.edit_location_alt, color: CooperativeColors.primary, size: 24),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.initialAddress == null ? 'Add New Address' : 'Edit Saved Address',
-                            style: CooperativeTypography.headlineSm.copyWith(
-                              color: CooperativeColors.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit_location_alt, color: CooperativeColors.primary, size: 24),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.initialAddress == null
+                                    ? (widget.isInstitution ? 'Add Facility Site' : 'Add New Address')
+                                    : (widget.isInstitution ? 'Edit Facility Site' : 'Edit Saved Address'),
+                                style: CooperativeTypography.headlineSm.copyWith(
+                                  color: CooperativeColors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                widget.initialAddress == null
+                                    ? (widget.isInstitution
+                                        ? 'Add facility location & GIS dispatch zone'
+                                        : 'Add new doorstep details & ward dispatch profile')
+                                    : (widget.isInstitution
+                                        ? 'Update facility location & GIS dispatch zone'
+                                        : 'Update doorstep details & ward dispatch profile'),
+                                style: CooperativeTypography.caption.copyWith(
+                                  color: CooperativeColors.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Update doorstep details & ward dispatch profile',
-                            style: CooperativeTypography.caption.copyWith(
-                              color: CooperativeColors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(context).pop();
+                    },
                     icon: const Icon(Icons.close, color: CooperativeColors.onSurfaceVariant),
                     style: IconButton.styleFrom(
                       backgroundColor: CooperativeColors.surfaceContainer,
-                      minimumSize: const Size(36, 36),
+                      minimumSize: const Size(44, 44),
                     ),
                   ),
                 ],
@@ -204,13 +312,14 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
             // Scrollable Content
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Address Label Chips
                     Text(
-                      'ADDRESS LABEL',
+                      widget.isInstitution ? 'FACILITY SITE LABEL' : 'ADDRESS LABEL',
                       style: CooperativeTypography.caption.copyWith(
                         color: CooperativeColors.onSurfaceVariant,
                         fontWeight: FontWeight.w700,
@@ -218,15 +327,81 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        _buildLabelChip('Home', Icons.home),
-                        const SizedBox(width: 8),
-                        _buildLabelChip('Office', Icons.apartment),
-                        const SizedBox(width: 8),
-                        _buildLabelChip('Other', Icons.location_on),
+                    if (widget.isInstitution) ...[
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          _buildOfficeChip('Office 1'),
+                          _buildOfficeChip('Office 2'),
+                          _buildOfficeChip('Office 3'),
+                          _buildOfficeChip('Custom'),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _customLabelController,
+                        textCapitalization: TextCapitalization.words,
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedLabel = val.trim().isEmpty ? 'Office' : val.trim();
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Office 1 (Main Hub), Office 2 (Site B)',
+                          labelText: 'Facility Site Name / Label',
+                          filled: true,
+                          fillColor: CooperativeColors.surfaceContainerLow,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      Row(
+                        children: [
+                          _buildLabelChip('Home', Icons.home),
+                          const SizedBox(width: 8),
+                          _buildLabelChip('Office', Icons.apartment),
+                          const SizedBox(width: 8),
+                          _buildLabelChip('Other', Icons.location_on),
+                        ],
+                      ),
+                      if (_selectedLabel == 'Other') ...[
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _customLabelController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            hintText: 'e.g. Parents House, Studio, Clinic',
+                            labelText: 'Custom Label Name',
+                            filled: true,
+                            fillColor: CooperativeColors.surfaceContainerLow,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
+                    ],
 
                     const SizedBox(height: 16),
 
@@ -411,13 +586,16 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '📍 GPS: 11.0168° N, 76.9558° E',
-                                    style: CooperativeTypography.caption.copyWith(
-                                      color: CooperativeColors.onSurfaceVariant,
-                                      fontSize: 11,
+                                  Flexible(
+                                    child: Text(
+                                      '📍 GPS: 11.0168° N, 76.9558° E',
+                                      style: CooperativeTypography.caption.copyWith(
+                                        color: CooperativeColors.onSurfaceVariant,
+                                        fontSize: 11,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     'Shivaji Nagar GIS Hub',
                                     style: CooperativeTypography.caption.copyWith(
@@ -450,7 +628,7 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
                         color: CooperativeColors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                       ),
                       child: DropdownButtonHideUnderline(
@@ -520,19 +698,20 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                     TextField(
                       controller: _streetController,
                       maxLines: 2,
+                      textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: CooperativeColors.surfaceContainerLow,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
                         ),
                       ),
@@ -559,19 +738,20 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                               const SizedBox(height: 6),
                               TextField(
                                 controller: _landmarkController,
+                                textCapitalization: TextCapitalization.sentences,
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: CooperativeColors.surfaceContainerLow,
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
                                   ),
                                 ),
@@ -603,15 +783,15 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                                   filled: true,
                                   fillColor: CooperativeColors.surfaceContainerLow,
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(color: CooperativeColors.outlineVariant.withValues(alpha: 0.6)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                     borderSide: const BorderSide(color: CooperativeColors.primary, width: 2),
                                   ),
                                 ),
@@ -625,46 +805,65 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
                     const SizedBox(height: 16),
 
                     // Primary Address Toggle
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: CooperativeColors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.star, color: CooperativeColors.primary, size: 22),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                    InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _isDefault = !_isDefault);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: CooperativeColors.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: CooperativeColors.outlineVariant.withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
                                 children: [
-                                  Text(
-                                    'Set as Primary Address',
-                                    style: CooperativeTypography.labelMd.copyWith(
-                                      color: CooperativeColors.onSurface,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Prioritized automatically for one-tap bookings',
-                                    style: CooperativeTypography.caption.copyWith(
-                                      color: CooperativeColors.onSurfaceVariant,
+                                  const Icon(Icons.star, color: CooperativeColors.primary, size: 22),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Set as Primary Address',
+                                          style: CooperativeTypography.labelMd.copyWith(
+                                            color: CooperativeColors.onSurface,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          'Prioritized automatically for one-tap bookings',
+                                          style: CooperativeTypography.caption.copyWith(
+                                            color: CooperativeColors.onSurfaceVariant,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          Switch(
-                            value: _isDefault,
-                            activeThumbColor: CooperativeColors.primary,
-                            onChanged: (val) => setState(() => _isDefault = val),
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 8),
+                            Switch(
+                              value: _isDefault,
+                              activeThumbColor: CooperativeColors.primary,
+                              onChanged: (val) {
+                                HapticFeedback.selectionClick();
+                                setState(() => _isDefault = val);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -672,10 +871,10 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
 
                     // Dispatch Notice
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: CooperativeColors.surfaceContainer.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -702,44 +901,65 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
             ),
 
             // Bottom Actions Bar
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: CooperativeColors.surfaceContainerLowest,
-                border: Border(
-                  top: BorderSide(color: CooperativeColors.surfaceContainerHigh),
-                ),
-              ),
-              child: Row(
-                children: [
-                  if (widget.initialAddress != null) ...[
-                    OutlinedButton.icon(
-                      onPressed: _delete,
-                      icon: const Icon(Icons.delete, size: 18, color: CooperativeColors.error),
-                      label: const Text('Delete', style: TextStyle(color: CooperativeColors.error)),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: CooperativeColors.error.withValues(alpha: 0.4)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                  ],
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _save,
-                      icon: const Icon(Icons.check, size: 20),
-                      label: const Text('Save Changes'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: CooperativeColors.primaryContainer,
-                        foregroundColor: CooperativeColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 2,
-                      ),
-                    ),
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: CooperativeColors.surfaceContainerLowest,
+                  border: const Border(
+                    top: BorderSide(color: CooperativeColors.surfaceContainerHigh),
                   ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    if (widget.initialAddress != null) ...[
+                      SizedBox(
+                        height: 50,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _delete();
+                          },
+                          icon: const Icon(Icons.delete_outline_rounded, size: 18, color: CooperativeColors.error),
+                          label: const Text('Delete', style: TextStyle(color: CooperativeColors.error)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: CooperativeColors.error.withValues(alpha: 0.4)),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _save();
+                          },
+                          icon: const Icon(Icons.check_rounded, size: 20),
+                          label: Text(widget.initialAddress == null ? 'Save Address' : 'Save Changes'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: CooperativeColors.primaryContainer,
+                            foregroundColor: CooperativeColors.onPrimary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -750,11 +970,15 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
 
   Widget _buildLabelChip(String label, IconData icon) {
     final isSelected = _selectedLabel == label;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedLabel = label),
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _selectedLabel = label);
+      },
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? CooperativeColors.primary : CooperativeColors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(20),
@@ -773,6 +997,55 @@ class _EditAddressBottomSheetState extends State<EditAddressBottomSheet> {
             const SizedBox(width: 6),
             Text(
               label,
+              style: CooperativeTypography.labelMd.copyWith(
+                color: isSelected ? CooperativeColors.onPrimary : CooperativeColors.onSurface,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOfficeChip(String officeLabel) {
+    final isSelected = officeLabel == 'Custom'
+        ? (!_customLabelController.text.startsWith('Office 1') &&
+            !_customLabelController.text.startsWith('Office 2') &&
+            !_customLabelController.text.startsWith('Office 3'))
+        : _customLabelController.text.startsWith(officeLabel);
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          if (officeLabel != 'Custom') {
+            _selectedLabel = officeLabel;
+            _customLabelController.text = officeLabel;
+          }
+        });
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? CooperativeColors.primary : CooperativeColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? CooperativeColors.primary : CooperativeColors.outlineVariant.withValues(alpha: 0.8),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              officeLabel == 'Custom' ? Icons.edit_rounded : Icons.apartment_rounded,
+              size: 16,
+              color: isSelected ? CooperativeColors.onPrimary : CooperativeColors.outline,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              officeLabel,
               style: CooperativeTypography.labelMd.copyWith(
                 color: isSelected ? CooperativeColors.onPrimary : CooperativeColors.onSurface,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

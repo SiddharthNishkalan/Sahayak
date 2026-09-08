@@ -1,86 +1,99 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'colors.dart';
 import 'typography.dart';
 
-class SahayakTheme {
-  SahayakTheme._();
+class WorkSoluteTheme {
+  WorkSoluteTheme._();
 
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme(
       brightness: Brightness.light,
-      primary: SahayakColors.primary,
-      onPrimary: SahayakColors.onPrimary,
-      primaryContainer: SahayakColors.primaryContainer,
-      onPrimaryContainer: SahayakColors.onPrimaryContainer,
-      secondary: SahayakColors.secondary,
-      onSecondary: SahayakColors.onSecondary,
-      secondaryContainer: SahayakColors.secondaryContainer,
-      onSecondaryContainer: SahayakColors.onSecondaryContainer,
-      tertiary: SahayakColors.tertiary,
-      onTertiary: SahayakColors.onTertiary,
-      tertiaryContainer: SahayakColors.tertiaryContainer,
-      onTertiaryContainer: SahayakColors.onTertiaryContainer,
-      error: SahayakColors.error,
-      onError: SahayakColors.onError,
-      errorContainer: SahayakColors.errorContainer,
-      onErrorContainer: SahayakColors.onErrorContainer,
-      surface: SahayakColors.surface,
-      onSurface: SahayakColors.onSurface,
-      surfaceDim: SahayakColors.surfaceDim,
-      surfaceBright: SahayakColors.surfaceBright,
-      surfaceContainerLowest: SahayakColors.surfaceContainerLowest,
-      surfaceContainerLow: SahayakColors.surfaceContainerLow,
-      surfaceContainer: SahayakColors.surfaceContainer,
-      surfaceContainerHigh: SahayakColors.surfaceContainerHigh,
-      surfaceContainerHighest: SahayakColors.surfaceContainerHighest,
-      outline: SahayakColors.outline,
-      outlineVariant: SahayakColors.outlineVariant,
-      inverseSurface: SahayakColors.inverseSurface,
-      onInverseSurface: SahayakColors.inverseOnSurface,
-      inversePrimary: SahayakColors.inversePrimary,
+      primary: WorkSoluteColors.primary,
+      onPrimary: WorkSoluteColors.onPrimary,
+      primaryContainer: WorkSoluteColors.primaryContainer,
+      onPrimaryContainer: WorkSoluteColors.onPrimaryContainer,
+      secondary: WorkSoluteColors.secondary,
+      onSecondary: WorkSoluteColors.onSecondary,
+      secondaryContainer: WorkSoluteColors.secondaryContainer,
+      onSecondaryContainer: WorkSoluteColors.onSecondaryContainer,
+      tertiary: WorkSoluteColors.tertiary,
+      onTertiary: WorkSoluteColors.onTertiary,
+      tertiaryContainer: WorkSoluteColors.tertiaryContainer,
+      onTertiaryContainer: WorkSoluteColors.onTertiaryContainer,
+      error: WorkSoluteColors.error,
+      onError: WorkSoluteColors.onError,
+      errorContainer: WorkSoluteColors.errorContainer,
+      onErrorContainer: WorkSoluteColors.onErrorContainer,
+      surface: WorkSoluteColors.surface,
+      onSurface: WorkSoluteColors.onSurface,
+      surfaceDim: WorkSoluteColors.surfaceDim,
+      surfaceBright: WorkSoluteColors.surfaceBright,
+      surfaceContainerLowest: WorkSoluteColors.surfaceContainerLowest,
+      surfaceContainerLow: WorkSoluteColors.surfaceContainerLow,
+      surfaceContainer: WorkSoluteColors.surfaceContainer,
+      surfaceContainerHigh: WorkSoluteColors.surfaceContainerHigh,
+      surfaceContainerHighest: WorkSoluteColors.surfaceContainerHighest,
+      outline: WorkSoluteColors.outline,
+      outlineVariant: WorkSoluteColors.outlineVariant,
+      inverseSurface: WorkSoluteColors.inverseSurface,
+      onInverseSurface: WorkSoluteColors.inverseOnSurface,
+      inversePrimary: WorkSoluteColors.inversePrimary,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: SahayakColors.background,
+      scaffoldBackgroundColor: WorkSoluteColors.background,
       fontFamily: 'plusJakartaSans',
+      splashFactory: InkSparkle.splashFactory,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
-        backgroundColor: SahayakColors.surface.withValues(alpha: 0.9),
-        foregroundColor: SahayakColors.onSurface,
+        backgroundColor: WorkSoluteColors.surface,
+        foregroundColor: WorkSoluteColors.onSurface,
         elevation: 0,
+        scrolledUnderElevation: 0.5,
         centerTitle: false,
-        titleTextStyle: SahayakTypography.headlineSm(),
+        toolbarHeight: 56,
+        titleTextStyle: WorkSoluteTypography.headlineSm(),
       ),
       cardTheme: CardThemeData(
-        color: SahayakColors.surfaceContainerLowest,
+        color: WorkSoluteColors.surfaceContainerLowest,
         elevation: 0,
+        shadowColor: WorkSoluteColors.onSurface.withValues(alpha: 0.08),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: SahayakColors.borderSubtle, width: 1),
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: WorkSoluteColors.borderSubtle, width: 0.5),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: SahayakColors.primaryContainer,
-          foregroundColor: SahayakColors.onPrimary,
-          minimumSize: const Size(64, 48),
+          backgroundColor: WorkSoluteColors.primaryContainer,
+          foregroundColor: WorkSoluteColors.onPrimary,
+          minimumSize: const Size(64, 52),
           elevation: 0,
-          textStyle: SahayakTypography.labelLg(color: SahayakColors.onPrimary),
+          splashFactory: InkSparkle.splashFactory,
+          textStyle: WorkSoluteTypography.labelLg(color: WorkSoluteColors.onPrimary),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: SahayakColors.onSurface,
-          backgroundColor: SahayakColors.surfaceContainerLow,
+          foregroundColor: WorkSoluteColors.onSurface,
+          backgroundColor: WorkSoluteColors.surfaceContainerLow,
           minimumSize: const Size(64, 48),
-          textStyle: SahayakTypography.labelMd(color: SahayakColors.onSurface),
-          side: const BorderSide(color: SahayakColors.borderSubtle, width: 1),
+          textStyle: WorkSoluteTypography.labelMd(color: WorkSoluteColors.onSurface),
+          side: const BorderSide(color: WorkSoluteColors.borderSubtle, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -89,30 +102,48 @@ class SahayakTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: SahayakColors.surfaceContainerLowest,
+        fillColor: WorkSoluteColors.surfaceContainerLowest,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: SahayakTypography.bodyMd(color: SahayakColors.outline),
-        labelStyle: SahayakTypography.bodyMd(color: SahayakColors.onSurfaceVariant),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        hintStyle: WorkSoluteTypography.bodyMd(color: WorkSoluteColors.outline),
+        labelStyle: WorkSoluteTypography.bodyMd(color: WorkSoluteColors.onSurfaceVariant),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: SahayakColors.borderSubtle, width: 1.5),
+          borderSide: const BorderSide(color: WorkSoluteColors.borderSubtle, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: SahayakColors.borderSubtle, width: 1.5),
+          borderSide: const BorderSide(color: WorkSoluteColors.borderSubtle, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: SahayakColors.primary, width: 2),
+          borderSide: const BorderSide(color: WorkSoluteColors.primary, width: 2.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: SahayakColors.error, width: 1.5),
+          borderSide: const BorderSide(color: WorkSoluteColors.error, width: 1.5),
         ),
       ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: WorkSoluteColors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        showDragHandle: true,
+        dragHandleColor: WorkSoluteColors.outlineVariant,
+        dragHandleSize: Size(36, 4),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: WorkSoluteColors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 6,
+      ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: SahayakColors.inverseSurface,
-        contentTextStyle: SahayakTypography.labelMd(color: SahayakColors.inverseOnSurface),
+        backgroundColor: WorkSoluteColors.inverseSurface,
+        contentTextStyle: WorkSoluteTypography.labelMd(color: WorkSoluteColors.inverseOnSurface),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),
@@ -120,5 +151,6 @@ class SahayakTheme {
   }
 }
 
-typedef CooperativeTheme = SahayakTheme;
+typedef SahayakTheme = WorkSoluteTheme;
+typedef CooperativeTheme = WorkSoluteTheme;
 

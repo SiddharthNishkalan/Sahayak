@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Cooperative Craft Color Palette
 /// Defined in cooperative_craft/DESIGN.md
-class SahayakColors {
-  SahayakColors._();
+class WorkSoluteColors {
+  WorkSoluteColors._();
 
   // Primary
   static const Color primary = Color(0xFF004AC6);
@@ -68,4 +68,5 @@ class SahayakColors {
   static const Color onErrorContainer = Color(0xFF93000A);
 }
 
-typedef CooperativeColors = SahayakColors;
+typedef SahayakColors = WorkSoluteColors;
+typedef CooperativeColors = WorkSoluteColors;
